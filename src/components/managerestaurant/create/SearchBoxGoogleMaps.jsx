@@ -65,7 +65,7 @@ export const SearchBoxGoogleMaps = compose(
         />
       </StandaloneSearchBox>
       <button type="button" style={styles.getLocation} onClick={props.onClickCurrentLocation}><LocationSearching style={{color: Color.kaidelivery}} /></button>
-      { props.inputLoading && <span class="inside-input" style={styles.loadingInside}></span> }
+      { props.inputLoading && <span className="inside-input" style={styles.loadingInside}></span> }
     </div>
     {
       (props.latlng ? 'Please turn on navigator location on google chrome settings' : '')

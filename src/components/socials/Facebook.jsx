@@ -7,8 +7,6 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { FormattedMessage } from 'react-intl'
 
-const BASE_URL = "http://localhost:3000/api/v1"
-
 class Facebook extends Component {
   state = {
     isLoggedIn: false,
@@ -26,7 +24,7 @@ class Facebook extends Component {
         image: response.picture.data.url
     }
     
-    this.props.loginFacebook(data).then(() => this.props.history.push('/profile'))
+    this.props.loginFacebook(data).then(() => this.props.history.replace('/profile'))
   };
 
   render() {

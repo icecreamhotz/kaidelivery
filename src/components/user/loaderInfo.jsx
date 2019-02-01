@@ -5,11 +5,11 @@ import Grid from '@material-ui/core/Grid';
 export class LoaderInfo extends React.Component {
     render() {
         return(
-            <div class="content-start">
+            <div className="content-start">
 				<Grid container spacing={0} justify="center">
                     <Grid item xs={9}>
 						<Grid container>
-                            <Grid item xs={12} lg={3} direction="column" style={{padding: 10}}>
+                            <Grid item xs={12} lg={3} style={{padding: 10}}>
 								<ContentLoader 
 									rtl
 									height={500}

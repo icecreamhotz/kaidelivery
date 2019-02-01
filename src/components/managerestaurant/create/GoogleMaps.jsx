@@ -2,23 +2,18 @@
 import React from 'react'
 import { SearchBoxGoogleMaps } from './SearchBoxGoogleMaps'
 import '../../loaders/loading.scss'
+import scriptLoader from 'react-async-script-loader';
 
 const _ = require("lodash");
-const { compose, withProps, lifecycle } = require("recompose");
+const { compose, lifecycle } = require("recompose");
 const {
-  withScriptjs,
   withGoogleMap,
   GoogleMap,
   Marker,
 } = require("react-google-maps");
 
-export const GoogleMaps = compose(
-  withProps({
-    googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyDCkgDceoiSbeWa29pNeJxmsNipUF7P3uw&v=3.exp&libraries=geometry,drawing,places",
-    loadingElement: <div style={{ height: `100%` }} />,
-    containerElement: <div style={{ height: `400px`, display: 'flex', flexDirection: 'column-reverse',position: 'relative' }} />,
-    mapElement: <div style={{ height: `100%` }} />,
-  }),
+
+const Maps = compose(
   lifecycle({
     componentWillMount() {
       const refs = {}
@@ -40,21 +35,22 @@ export const GoogleMaps = compose(
         },
         onBoundsChanged: _.debounce(
             () => {
-                this.setState(prevState => ({
-
-                    bounds: refs.map.getBounds(),
-                    center: {
-                      ...prevState.center,
-                      lat: parseFloat(refs.map.getCenter().lat()),
-                      lng: parseFloat(refs.map.getCenter().lng())
-                    } 
-                }))
-                let {
-                    onBoundsChange
-                } = this.props
-                if(onBoundsChange) {
-                    onBoundsChange(refs.map)
-                }
+                 if (this.mounted) {
+                  this.setState(prevState => ({
+                      bounds: refs.map.getBounds(),
+                      center: {
+                        ...prevState.center,
+                        lat: parseFloat(refs.map.getCenter().lat()),
+                        lng: parseFloat(refs.map.getCenter().lng())
+                      } 
+                  }))
+                  let {
+                      onBoundsChange
+                  } = this.props
+                  if(onBoundsChange) {
+                      onBoundsChange(refs.map)
+                  }
+                 }
             },
             100, {
                 maxWait: 300
@@ -107,9 +103,7 @@ export const GoogleMaps = compose(
                       if(this.state.isSearch) { this.state.onClickGetLocation() }
                       else { 
                         this.setState(prevState => ({ isSearch: true })) 
-                        setTimeout(() => {
-                          this.state.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng)
-                        }, 700);
+                        this.state.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng)
                       }
                     })
                 },
@@ -140,7 +134,7 @@ export const GoogleMaps = compose(
           }), () => this.state.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng));
         },
         setValueToPlaceSearch: (lat, lng) => {
-          if(!this.state.loading || !this.state.inputLoading || this.state.searchValue != '') {
+          if(!this.state.loading || !this.state.inputLoading || this.state.searchValue !== '') {
             this.setState({loading: true, inputLoading: true, searchValue: ''})
           }
 
@@ -209,10 +203,13 @@ export const GoogleMaps = compose(
       })
     },
     componentDidMount() {
+      this.mounted = true;
       this.state.getGeoLocation()
     },
+    componentWillUnmount() {
+      this.mounted = false;
+    }
   }),
-  withScriptjs,
   withGoogleMap
 )(props =>
     <div>
@@ -248,9 +245,28 @@ export const GoogleMaps = compose(
         {
           props.loading &&
           <div className={"loading-google"}>
-            <div class="loading-google-spin">
+            <div className="loading-google-spin">
             </div>
           </div>
         }
     </div>
 );
+
+class GoogleMaps extends React.Component {
+  render() {
+    const {isScriptLoadSucceed} = this.props; 
+    return (
+      <div>
+        {isScriptLoadSucceed && 
+        <Maps 
+          loadingElement= {<div style={{ height: `100%` }} />}
+          containerElement= {<div style={{ height: `400px`, display: 'flex', flexDirection: 'column-reverse',position: 'relative' }} />}
+          mapElement= {<div style={{ height: `100%` }} />}
+          onClickCurrentLocation={this.props.onClickCurrentLocation} 
+          setPosition={this.props.setPosition}/>}
+      </div>
+    );
+  }
+}
+
+export default scriptLoader('https://maps.googleapis.com/maps/api/js?key=AIzaSyDCkgDceoiSbeWa29pNeJxmsNipUF7P3uw&v=3.exp&libraries=geometry,drawing,places')(GoogleMaps);

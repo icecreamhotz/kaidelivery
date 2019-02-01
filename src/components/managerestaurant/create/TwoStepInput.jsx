@@ -14,8 +14,6 @@ import Comment from '@material-ui/icons/Comment';
 import Description from '@material-ui/icons/Description';
 import MobileFriendly from '@material-ui/icons/MobileFriendly';
 import Email from '@material-ui/icons/Email';
-import withRoot from '../../input/InputStyle';
-import Alert from '../../loaders/Alert'
 import Divider from '@material-ui/core/Divider';
 import API from '../../../helper/api'
 import Button from '@material-ui/core/Button';
@@ -23,10 +21,11 @@ import { Color } from '../../../variable/Color';
 import withRules from '../../validations/validate'
 import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
 import { MuiPickersUtilsProvider } from 'material-ui-pickers'
-import { GoogleMaps } from './GoogleMaps'
+import GoogleMaps from './GoogleMaps'
 import MomentUtils from '@date-io/moment';
 import red from '@material-ui/core/colors/red';
 import green from '@material-ui/core/colors/green';
+import SweetAlert from 'sweetalert-react';
 
 // set locale th
 moment.locale('th')
@@ -34,7 +33,7 @@ moment.locale('th')
 const styles = theme => ({
     root: {
         flexGrow: 1,
-        paddingTop: 30
+        paddingTop: 30,
     },
     paper: {
         padding: theme.spacing.unit * 2,
@@ -66,6 +65,7 @@ class TwoStepInput extends Component {
     constructor(props) {
         super(props);
          this.state = { 
+            res_name: '',
             res_email: '',
             res_tel: {
                 res_tel1: '', 
@@ -81,15 +81,15 @@ class TwoStepInput extends Component {
             res_address: '',
             loading: true, 
             open: false, 
-            text: '', 
-            title: '', 
-            type:'' ,
+            type: 'info',
+            text: 'Do you need insert ?',
+            title: 'Warning',
             res_open: new Date(),
             res_close: new Date(),
             res_holiday: [],
             res_types: [],
             res_typesValue: [],
-            res_position: []
+            res_position: [],
         };
     }
 
@@ -121,44 +121,62 @@ class TwoStepInput extends Component {
         if (this.state.res_address !== nextState.res_address) {
             return true
         }
-        if (this.state.res_open !== nextState.res_open) {
+        if (moment(this.state.res_open).format('h:mma') !== moment(nextState.res_open).format('h:mma')) {
             return true
         }
-        if (this.state.res_close !== nextState.res_close) {
+        if (moment(this.state.res_close).format('h:mma') !== moment(nextState.res_close).format('h:mma')) {
             return true
         }
-        if (this.state.res_holiday !== nextState.res_holiday) {
+        if (this.state.res_holiday.length !== nextState.res_holiday.length) {
             return true
         }
-        if (this.state.res_types !== nextState.res_types) {
+        if (this.state.res_types.length !== nextState.res_types.length) {
             return true
         }
-        if (this.state.res_typesValue !== nextState.res_typesValue) {
+        if (this.state.res_typesValue.length !== nextState.res_typesValue.length) {
+            return true
+        }
+        if (this.state.open !== nextState.open) {
+            return true
+        }
+        if (this.state.loading !== nextState.loading) {
+            return true
+        }
+        if (this.state.type !== nextState.type) {
+            return true
+        }
+        if (this.state.title !== nextState.title) {
+            return true
+        }
+        if (this.state.text !== nextState.text) {
+            return true
+        }
+        if (this.props.resName !== nextProps.resName) {
             return true
         }
         return false
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.resName !== this.props.resName) {
+            this.setState({
+                res_name: nextProps.resName
+            })
+        }
     }
 
     async componentDidMount() {
         await this.fetchRestaurantTypes()
         
         ValidatorForm.addValidationRule('openTime', (value) => {
-            if(moment(value).hour() >= 12 && moment(this.state.res_close).hour() <= 12) {
-                if(moment(value, 'h:mma').isAfter(moment(this.state.res_close, 'h:mma').add(1, 'days'))) {
-                    return false
-                }
-            } else if(moment(value, 'h:mma').isAfter(moment(this.state.res_close, 'h:mma'))) {
+            if(moment(value).format('h:mma') === moment(this.state.res_close).format('h:mma')) {
                 return false
             }
             return true
         })
 
         ValidatorForm.addValidationRule('closeTime', (value) => {
-            if(moment(value).hour() <= 12 && moment(this.state.res_open).hour() >= 12) {
-                if(moment(value, 'h:mma').add(1, 'days').isBefore(moment(this.state.res_open, 'h:mma'))) {
-                    return false
-                }
-            } else if(moment(value, 'h:mma').isBefore(moment(this.state.res_open, 'h:mma'))) {
+            if(moment(value).format('h:mma') === moment(this.state.res_open).format('h:mma')) {
                 return false
             }
             return true
@@ -208,7 +226,6 @@ class TwoStepInput extends Component {
     }
 
     handleDateChange = name => date => {
-        //const time = moment(date, 'h:mm:ss A').format('HH:mm');
         this.setState({
             [name] : date
         });
@@ -217,7 +234,7 @@ class TwoStepInput extends Component {
     handleHoliday = event => {
         this.setState({
             res_holiday: [...this.state.res_holiday, event.target.value]
-        }, () => console.log(this.state.res_holiday));
+        });
     }
 
     onChangeValue = name => event => {
@@ -325,27 +342,71 @@ class TwoStepInput extends Component {
         this.setState({ res_position: pos})
     }
 
-    onSubmit = () => {
-        const { res_email, res_tel, my_tel, res_details, res_address, res_open, res_close, res_holiday, res_typesValue, res_position } = this.state
+    onSubmit = async () => {
+        this.setState({
+            open: false,
+            loading: true
+        }, async () => {
+            const { res_name, res_email, res_tel, my_tel, res_details, res_address, res_open, res_close, res_holiday, res_typesValue, res_position } = this.state
 
-        const resTelephone = res_tel.res_tel1 + res_tel.res_tel2 + res_tel.res_tel3
-        const myTelephone = (my_tel.my_tel1.length > 0 ? my_tel.my_tel1 + my_tel.my_tel2 + my_tel.my_tel3 : '')
+            const resTelephone = res_tel.res_tel1 + res_tel.res_tel2 + res_tel.res_tel3
+            const myTelephone = (my_tel.my_tel1.length > 0 ? my_tel.my_tel1 + my_tel.my_tel2 + my_tel.my_tel3 : '')
 
-        const telephone = [resTelephone, myTelephone]
+            const telephone = [resTelephone, myTelephone]
+            const restypesValue = res_typesValue.map(item => item.value)
 
-        const data = {
-            res_email: res_email,
-            res_tel: JSON.stringify(telephone),
-            res_details: res_details,
-            res_address: res_address,
-            res_open: moment(res_open).format('HH:mm'),
-            res_close: moment(res_close).format('HH:mm'),
-            res_holiday: JSON.stringify(res_holiday),
-            res_typesValue: JSON.stringify(res_typesValue),
-            res_position: JSON.stringify(res_position)
+            const restaurantData = {
+                res_name: res_name,
+                res_email: res_email,
+                res_telephone: JSON.stringify(telephone),
+                res_details: res_details,
+                res_address: res_address,
+                res_open: moment(res_open).format('HH:mm'),
+                res_close: moment(res_close).format('HH:mm'),
+                res_holiday: (res_holiday.length > 0 ? JSON.stringify(res_holiday) : null),
+                res_typesValue: (restypesValue.length > 0 ? JSON.stringify(restypesValue) : null),
+                res_position: res_position
+            }
+
+            await API.post(`restaurants/update/${this.state.res_name}`, restaurantData).then(() => {
+                this.setState({
+                    loading: false,
+                }, () => {
+                    setTimeout(() => {
+                        this.setState({
+                            type: 'success',
+                            text: 'Inserted successful',
+                            title: 'Success',
+                            open: true
+                        })
+                    }, 100);
+                })
+            }) 
+        })
+    }
+
+    sweetalert = () => {
+        const { type } = this.state
+        if(type === 'success') {
+            this.setState({
+                open: false
+            }, () => {
+                setTimeout(() => {
+                    this.props.handleNext()
+                }, 100);
+            })
+        } 
+        if (type === 'info' ){
+            this.onSubmit()
         }
+    }
 
-        console.log(data)
+    handleSubmit = (e) => {
+        e.preventDefault()
+
+        this.setState({
+            open: true
+        }) 
     }
 
     render() {
@@ -354,21 +415,21 @@ class TwoStepInput extends Component {
             <div className={classes.root}>
                 <ValidatorForm
                     ref="form"
-                    onSubmit={this.onSubmit}
+                    onSubmit={this.handleSubmit}
                     onError={errors => console.log(errors)}
                 >
                     <Paper className={classes.paper}>
-                        <Grid container spacing={24}>
+                        <Grid container spacing={24} style={{paddingTop: 30, paddingBottom: 30}}>
                             <Grid item container>
                                 <Typography variant="h4" gutterBottom align="left">
                                     Setting your restaurant informations
                                 </Typography>
-                                <Divider />
+                                <Divider style={{width: '100%'}}/>
                             </Grid>
                             <Grid item xs={12} container>
                                 <Grid item container>
                                     <Typography variant="h6" gutterBottom align="left">
-                                        Restaurants details
+                                        {this.state.res_name} details
                                     </Typography>
                                 </Grid>
                                 <Grid item container alignItems="flex-end" spacing={24}>
@@ -388,14 +449,14 @@ class TwoStepInput extends Component {
                                     </Grid>
                                 </Grid>
                             </Grid>
-                            <Grid container xs={12} style={{marginTop: 15}}>
+                            <Grid container style={{marginTop: 15}}>
                                 <Grid item container xs={12} md={6} alignItems="flex-start" spacing={24}>
                                     <Grid item xs={2} className={classes.styleIcTel}>
                                         <MobileFriendly className={"ic-color"}/>
                                     </Grid>
                                     <Grid item xs align="left"> 
                                         <Grid item>
-                                            <Typography variant="subheading" gutterBottom>
+                                            <Typography variant="subtitle1" gutterBottom>
                                                     Restaurant Number 
                                                 <Typography variant="caption" gutterBottom style={{color: red[300], display: 'inline', marginLeft: 20}}>
                                                     *Required
@@ -481,7 +542,7 @@ class TwoStepInput extends Component {
                                     </Grid>
                                     <Grid item xs align="left"> 
                                         <Grid item>
-                                            <Typography variant="subheading" gutterBottom>
+                                            <Typography variant="subtitle1" gutterBottom>
                                                     Contact Number 
                                                 <Typography variant="caption" gutterBottom style={{color: green[300], display: 'inline', marginLeft: 20}}>
                                                     *Optional
@@ -768,7 +829,15 @@ class TwoStepInput extends Component {
                         </Grid>
                     </Paper>
                 </ValidatorForm>
-                <Alert open={this.state.open} title={this.state.title} type={this.state.type} content={this.state.content} close={this.closeAlert}/>
+                <SweetAlert
+                    show={this.state.open}
+                    title={this.state.title}
+                    text={this.state.text}
+                    type={this.state.type}
+                    onConfirm={() => { if(this.state.open) this.sweetalert() }}
+                    onEscapeKey={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
+                    onOutsideClick={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
+                />
             </div>
         );
     }
@@ -778,4 +847,4 @@ TwoStepInput.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(withRoot(withRules(TwoStepInput)));
+export default withStyles(styles)(withRules(TwoStepInput));

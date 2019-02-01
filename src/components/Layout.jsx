@@ -12,9 +12,9 @@ class InfoPage extends Component {
                 { 
                     isAuthenticated 
                         ?
-                        <HeaderAuth 
-                            component={this.props.children}
-                        />
+                        <HeaderAuth>
+                            {this.props.children}
+                        </HeaderAuth>
                         :
                     <HeaderNAuth />
                 }

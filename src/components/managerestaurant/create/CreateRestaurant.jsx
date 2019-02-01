@@ -8,6 +8,9 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import OneStepInput from './OneStepInput'
 import TwoStepInput from "./TwoStepInput";
+import ThreeStepInput from './ThreeStepInput';
+import { connect } from 'react-redux'
+import { updateTriggerURL } from '../../../actions/restaurant'
 
 const styles = theme => ({
   backButton: {
@@ -20,12 +23,14 @@ const styles = theme => ({
 });
 
 function getSteps() {
-  return ['About Restaurant', 'Restaurant Infomations', 'Do not think'];
+  return ['About Restaurant', 'Restaurant Infomations', 'Success'];
 }
 
 class CreateRestaurant extends Component {
     state = {
         activeStep: 0,
+        res_name: '',
+        loading: false
     };
 
     handleNext = () => {
@@ -33,13 +38,31 @@ class CreateRestaurant extends Component {
         activeStep: state.activeStep + 1,
         }));
     };
+    
+    setResName = (res_name) => {
+        this.setState({
+            res_name: res_name
+        })
+    }
+
+    setLoading = (loaded) => {
+        this.setState({ loading: loaded })
+    }
+
+    componentWillReceiveProps(newProps) {
+        if(newProps.resetStep) {
+           this.setState({
+               activeStep: 0
+           })
+        }
+    }
 
     render() {
         const { classes } = this.props;
         const steps = getSteps();
         const { activeStep } = this.state;
         return (
-            <div class="content-start">
+            <div className="content-start">
                 <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map(label => {
                     return (
@@ -57,8 +80,9 @@ class CreateRestaurant extends Component {
                     </div>
                 ) : (
                     <div>
-                    {activeStep == 0 && <OneStepInput handleNext={this.handleNext}/>}
-                    {activeStep == 1 && <TwoStepInput handleNext={this.handleNext}/>}
+                    {activeStep === 0 && <OneStepInput handleNext={this.handleNext} setResName={this.setResName} />}
+                    {activeStep === 1 && <TwoStepInput handleNext={this.handleNext} resName={this.state.res_name} />}
+                    {activeStep === 2 && <ThreeStepInput />}
                     </div>
                 )}
                 </div>
@@ -71,4 +95,10 @@ CreateRestaurant.propTypes = {
   classes: PropTypes.object,
 };
 
-export default withStyles(styles)(CreateRestaurant);;
+function mapStateToProps(state) {
+    return {
+        resetStep: state.update.resStep
+    }
+}
+
+export default connect(mapStateToProps, { updateTriggerURL: updateTriggerURL })(withStyles(styles)(CreateRestaurant));

@@ -10,7 +10,6 @@ import TextRotationNone from '@material-ui/icons/TextRotationNone';
 import Email from '@material-ui/icons/Email';
 import MobileFriendly from '@material-ui/icons/MobileFriendly';
 import Comment from '@material-ui/icons/Comment';
-import withRoot from '../input/InputStyle';
 import { Color } from '../../variable/Color';
 import Button from '@material-ui/core/Button';
 import { signup } from '../../actions/user'
@@ -19,8 +18,6 @@ import withRules from '../validations/validate'
 import { withRouter } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl'
 import API from '../../helper/api'
-
-const BASE_URL = "http://localhost:3000/api/v1"
 
 const styles = {
     container : {
@@ -352,4 +349,4 @@ TabSignUp.propTypes = {
     signup: PropTypes.func.isRequired
 }
 
-export default connect(null, { signup })(withStyles(styles)(withRoot(withRules(withRouter(TabSignUp)))))
+export default connect(null, { signup })(withStyles(styles)(withRules(withRouter(TabSignUp))))

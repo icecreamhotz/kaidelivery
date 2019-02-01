@@ -40,6 +40,7 @@ const styles = theme => ({
         marginRight: 'auto'
     }
   },
+  
 })
 
 class Header extends Component {
@@ -67,8 +68,7 @@ class Header extends Component {
 
     render() {
         const { classes, locale } = this.props
-        const { anchorEl, localeEl } = this.state
-        const open = Boolean(anchorEl)
+        const { localeEl } = this.state
         return(
             <div className={classes.root}>
                 <AppBar position="fixed" className={classes.appbar}>

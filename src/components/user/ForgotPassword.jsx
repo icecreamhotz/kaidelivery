@@ -4,7 +4,6 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles';
-import withRoot from '../input/InputStyle';
 import withRules from '../validations/validate'
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -205,4 +204,4 @@ ForgotPassword.propTypes = {
     classes: PropTypes.object.isRequired
 }
 
-export default withStyles(styles)(withRoot(withRules(ForgotPassword)))
+export default withStyles(styles)(withRules(ForgotPassword))

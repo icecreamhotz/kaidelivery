@@ -27,7 +27,7 @@ import './loading.scss'
 import { FormattedMessage, injectIntl } from 'react-intl'
 import { NavLink } from 'react-router-dom';
 import { setLocale } from '../../actions/locale'
-import { updateRestaurantName } from '../../actions/restaurant'
+import { updateRestaurantName, updateTriggerURL } from '../../actions/restaurant'
 import thailand from '../../resource/images/thailand.png'
 import english from '../../resource/images/english.png'
 import API from '../../helper/api'
@@ -38,6 +38,8 @@ import StarBorder from '@material-ui/icons/StarBorder';
 import Collapse from '@material-ui/core/Collapse';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import ContentLoader from "react-content-loader"
+import { withRouter } from 'react-router'
+
 
 const styles = theme => ({
   root: {
@@ -114,6 +116,9 @@ const styles = theme => ({
   nested: {
     paddingLeft: theme.spacing.unit * 4,
   },
+  activeClass: {
+      color: 'white',
+  }
 })
 
 const LeftLoader = props => (
@@ -172,13 +177,50 @@ class Header extends Component {
         myRestaurants: [],
         loadingLeft: true,
         loadingRes: false,
+        selectedIndex: '',
+        refresh: false
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        if(this.state.localeEl !== nextState.localeEl) {
+            return true;
+        }
+        if(this.state.user.length !== nextState.user.length) {
+            return true;
+        }
+        if(this.state.avatar !== nextState.avatar) {
+            return true;
+        }
+        if(this.state.loading !== nextState.loading) {
+            return true;
+        }
+        if(this.state.open !== nextState.open) {
+            return true;
+        }
+        if(this.state.openRes !== nextState.openRes) {
+            return true;
+        }
+        if(this.state.myRestaurants.length !== nextState.myRestaurants.length) {
+            return true;
+        }
+        if(this.state.loadingLeft !== nextState.loadingLeft) {
+            return true;
+        }
+        if(this.state.loadingRes !== nextState.loadingRes) {
+            return true;
+        }
+        if(this.state.selectedIndex !== nextState.selectedIndex) {
+            return true;
+        }
+        return false
+    }
+    
     async componentDidMount() {
         await this.fetchUserData()
         await this.fetchRestaurantUser()
         this.setState({
-            loadingLeft: false
+            loadingLeft: false,
+            selectedIndex: this.props.location.pathname
         })
     }
 
@@ -214,7 +256,7 @@ class Header extends Component {
                 loadingRes: true
             })
             await this.fetchRestaurantUser()
-            this.props.updateRestaurantName(false)
+            await this.props.updateRestaurantName(false)
         }
     }
     
@@ -224,7 +266,14 @@ class Header extends Component {
 
     handleClick = () => {
         this.setState(state => ({ openRes: !state.openRes }));
-    };
+    }
+
+    handleListItemClick = (event, index) => {
+        if(index === '/myrestaurant') {
+            this.props.updateTriggerURL(true)
+        }
+        this.setState({ selectedIndex: index})
+    }
 
     handleDrawerClose = () => {
         this.setState({ open: false })
@@ -242,6 +291,7 @@ class Header extends Component {
         const { classes, locale, theme, logout } = this.props
         const { anchorEl, loading, avatar, localeEl, myRestaurants, loadingRes, loadingLeft} = this.state
         const open = Boolean(anchorEl)
+
         return(
             <div className={classes.root}>
                 <CssBaseline />
@@ -264,8 +314,8 @@ class Header extends Component {
                     <div>
                         {
                             loading ?
-                            <div class="animated">
-                                <div class="parent"></div>
+                            <div className="animated">
+                                <div className="parent"></div>
                             </div>
                             :
                             
@@ -273,7 +323,7 @@ class Header extends Component {
                                 {this.state.user.name + ' ' + this.state.user.lastname}
                             </Typography>
                         }
-                        <IconButton
+                            <IconButton
                                 aria-owns={open ? 'menu-appbar' : undefined}
                                 aria-haspopup="true"
                                 onClick={this.handleMenu}
@@ -316,7 +366,7 @@ class Header extends Component {
                     }}
                     >
                     <div className={classes.toolbar}>
-                        <Typography component="h2" variant="headline" style={{flex: '1'}}>
+                        <Typography component="h2" variant="h5" style={{flex: '1'}}>
                             Menu
                         </Typography>
                         <IconButton onClick={this.handleDrawerClose}>
@@ -341,10 +391,10 @@ class Header extends Component {
                                     text: <FormattedMessage id="menu.createrestaurant" />, 
                                 }
                             ].map((value, index) => (
-                            <NavLink to={value.url} style={{ textDecoration: 'none', color: 'unset' }} > 
-                                <ListItem button key={value}>
-                                    <ListItemIcon>{index % 2 === 0 ? <Logout /> : <Logout />}</ListItemIcon>
-                                    <ListItemText primary={value.text} />
+                            <NavLink to={value.url} key={index} style={{ textDecoration: 'none', color: 'unset' }}> 
+                                <ListItem button key={index} selected={this.state.selectedIndex === value.url} onClick={event => this.handleListItemClick(event, value.url)}>
+                                    <ListItemIcon style={{ color: (this.state.selectedIndex === `${value.url}` ? '#FFFFFF' : '') }}>{index % 2 === 0 ? <Logout /> : <Logout />}</ListItemIcon>
+                                    <ListItemText disableTypography inset primary={<Typography type="body2" style={{ color: (this.state.selectedIndex === `${value.url}` ? '#FFFFFF' : '') }}>{value.text}</Typography>}/> 
                                 </ListItem>
                             </NavLink>
                             ))}
@@ -352,7 +402,7 @@ class Header extends Component {
                                 !loadingRes ?
                                     myRestaurants.length > 0 &&
                                     <div>
-                                    <ListItem button onClick={this.handleClick}>
+                                    <ListItem key="1" button onClick={this.handleClick}>
                                     <ListItemIcon>
                                         <InboxIcon />
                                     </ListItemIcon>
@@ -361,17 +411,17 @@ class Header extends Component {
                                     </ListItem>
                                     <Collapse in={this.state.openRes} timeout="auto" unmountOnExit>
                                         <List component="div" disablePadding>
-                                        {myRestaurants.map(item => {
-                                            return  (
-                                                    <ListItem button className={classes.nested}>
-                                                        <ListItemIcon>
+                                        {myRestaurants.map((item, index) => (
+                                                <NavLink to={`/myrestaurant/${item.res_name}`} key={index} style={{ textDecoration: 'none', color: 'unset' }}>
+                                                    <ListItem button className={classes.nested} key={item.res_id} selected={this.state.selectedIndex === `/myrestaurant/${item.res_name}`} onClick={event => this.handleListItemClick(event, `/myrestaurant/${item.res_name}`)}>
+                                                        <ListItemIcon style={{ color: (this.state.selectedIndex === `/myrestaurant/${item.res_name}` ? '#FFFFFF' : '') }}>
                                                             <StarBorder />
                                                         </ListItemIcon>
-                                                        <ListItemText inset primary={item.res_name} /> 
+                                                        <ListItemText disableTypography inset primary={<Typography type="body2" style={{ color: (this.state.selectedIndex === `/myrestaurant/${item.res_name}` ? '#FFFFFF' : '') }}>{item.res_name}</Typography>}/> 
                                                     </ListItem>
-                                                )
-                                            })
-                                            }
+                                                </NavLink>
+                                            ))
+                                        }
                                         </List>
                                     </Collapse>
                                     </div>
@@ -383,7 +433,7 @@ class Header extends Component {
                         </List>
                         <Divider />
                         <List>
-                            <ListItem button key="1" onClick={() => logout()} style={{backgroundColor: Color.danger}}>
+                            <ListItem button onClick={() => logout()} style={{backgroundColor: Color.danger}}>
                                 <ListItemIcon style={{color: '#FFFFFF'}}><Logout /></ListItemIcon>
                                 <ListItemText  
                                     disableTypography
@@ -400,9 +450,10 @@ class Header extends Component {
                 className={classNames(classes.content, {
                     [classes.contentShift]: this.state.open,
                 })}>
-                    {this.props.component}
+                    {
+                        this.props.children
+                    }
                 </main>
-                
             </div>
         )
     }
@@ -414,10 +465,6 @@ Header.propTypes = {
     logout: PropTypes.func.isRequired,
     setLocale: PropTypes.func.isRequired,
     locale: PropTypes.string.isRequired,
-    userStatus: PropTypes.bool.isRequired,
-    resStatus: PropTypes.bool.isRequired,
-    updateData: PropTypes.func.isRequired,
-    updateRestaurantName: PropTypes.func.isRequired,
 };
 
 function mapStateToProps(state) {
@@ -429,4 +476,10 @@ function mapStateToProps(state) {
 }
 
 
-export default injectIntl(connect(mapStateToProps, { logout: actions.logout, setLocale, updateData: updateData, updateRestaurantName: updateRestaurantName })(withStyles(styles, { withTheme: true })(Header)))
+export default injectIntl(connect(mapStateToProps, { 
+    logout: actions.logout, 
+    setLocale, 
+    updateData: updateData, 
+    updateRestaurantName: updateRestaurantName,
+    updateTriggerURL: updateTriggerURL
+})(withStyles(styles, { withTheme: true })(withRouter(Header))))

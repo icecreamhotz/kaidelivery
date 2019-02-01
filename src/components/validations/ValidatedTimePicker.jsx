@@ -25,19 +25,7 @@ const styles = theme => ({
 class ValidatedTimePicker extends ValidatorComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (this.props.errorMessages !== nextProps.errorMessages) {
-            return true
-        }
-        if (this.props.validators !== nextProps.validators) {
-            return true
-        }
-        if (this.props.requiredError !== nextProps.requiredError) {
-            return true
-        }
         if (this.props.value !== nextProps.value) {
-            return true
-        }
-        if (this.props.classes !== nextProps.classes) {
             return true
         }
         if (this.state.isValid !== nextState.isValid) {
@@ -47,7 +35,7 @@ class ValidatedTimePicker extends ValidatorComponent {
     }
 
     render() {
-        const { errorMessages, validators, requiredError, value, classes, ...rest } = this.props;
+        const { errorMessages, validators, requiredError, validatorListener, value, classes, ...rest } = this.props;
         const { isValid } = this.state
         return (
             <div>

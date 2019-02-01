@@ -3,14 +3,8 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles';
-import withRoot from '../input/InputStyle';
 import withRules from '../validations/validate'
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import { Link } from 'react-router-dom'
 import VpnKey from '@material-ui/icons/VpnKey';
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import Button from '@material-ui/core/Button';
@@ -34,8 +28,6 @@ const styles = theme => ({
         }
     }
 });
-
-const ITEM_HEIGHT = 48; // menu password height
 
 class ResetPassword extends Component {
 
@@ -80,7 +72,7 @@ class ResetPassword extends Component {
         const { classes } = this.props;
         const { loadingDB } = this.state
         return(
-            <div class="content-start">
+            <div className="content-start">
                 <Loading loaded={loadingDB}/>
                 <ValidatorForm
                     ref="form"
@@ -90,7 +82,7 @@ class ResetPassword extends Component {
                 <Grid container spacing={0} justify="center">
                     <Grid item xs={10} sm={9} md={8} lg={6}>
                         <Paper className={classes.paper}>
-                            <Grid container spacing={12}>
+                            <Grid container spacing={16}>
                                 <Typography variant="h4" gutterBottom>
                                     <FormattedMessage id="profile.information"/>
                                 </Typography>
@@ -158,4 +150,4 @@ ResetPassword.propTypes = {
     classes: PropTypes.object.isRequired
 }
 
-export default withStyles(styles)(withRoot(withRules(ResetPassword)))
+export default withStyles(styles)(withRules(ResetPassword))

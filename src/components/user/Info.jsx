@@ -11,9 +11,7 @@ import TextRotationNone from '@material-ui/icons/TextRotationNone';
 import Email from '@material-ui/icons/Email';
 import MobileFriendly from '@material-ui/icons/MobileFriendly';
 import Comment from '@material-ui/icons/Comment';
-import TextField from '@material-ui/core/TextField';
 import { Color } from '../../variable/Color';
-import withRoot from '../input/InputStyle';
 import { LoaderInfo } from './loaderInfo'
 import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import Loading from '../loaders/loading'
@@ -225,7 +223,7 @@ class Info extends Component {
         if(loadingContent) { return <LoaderInfo /> }
         const getImage = `http://localhost:3000/users/${(avatar ? avatar : 'noimg.png')}`
         return(
-            <div class="content-start">
+            <div className="content-start">
                 <Loading loaded={loadingDB}/>
                 <ValidatorForm
                     ref="form"
@@ -236,7 +234,7 @@ class Info extends Component {
                     <Grid item xs={10}>
                         <Paper className={classes.paper}>
                             <Grid container>
-                                <Grid item xs={12} lg={3} direction="column" style={{padding: 10}}>                            
+                                <Grid item xs={12} lg={3} style={{padding: 10}}>                            
                                     <Grid item xs={12}>
                                         <Avatar alt={this.state.name} src={(preview ? preview : getImage)} className={classes.bigAvatar} />
                                     </Grid>
@@ -401,7 +399,7 @@ class Info extends Component {
                                                 <Comment className={classes.ic}/>
                                             </Grid>
                                             <Grid item xs={12} md>
-                                                <TextField
+                                                <TextValidator
                                                     name="address"
                                                     label={<FormattedMessage id="input.address" />}
                                                     fullWidth
@@ -456,4 +454,4 @@ Info.propTypes = {
     updateData: PropTypes.func.isRequired
 }
 
-export default connect(null, {updateData: updateData})(withStyles(styles)(withRoot(withRules(Info))))
+export default connect(null, {updateData: updateData})(withStyles(styles)(withRules(Info)))

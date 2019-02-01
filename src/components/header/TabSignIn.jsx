@@ -6,7 +6,6 @@ import Grid from '@material-ui/core/Grid';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import VpnKey from '@material-ui/icons/VpnKey';
 import Email from '@material-ui/icons/Email';
-import withRoot from '../input/InputStyle';
 import { Color } from '../../variable/Color';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -20,8 +19,6 @@ import Facebook from '../socials/Facebook'
 import API from '../../helper/api'
 
 import { FormattedMessage } from 'react-intl'
-
-const BASE_URL = "http://localhost:3000/api/v1"
 
 const styles = theme => ({
     paperRoot: {
@@ -100,7 +97,7 @@ class TabSignIn extends Component {
     };
 
     handleSendEmail = async () => {
-        const regEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        const regEmail = /^(([^<>()\\[\]\\.,;:\s@"]+(\.[^<>()\\[\]\\.,;:\s@"]+)*)|(".+"))@((\\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         
         if(this.state.email === '' || !regEmail.test(this.state.email)) {
             this.setState({
@@ -167,7 +164,7 @@ class TabSignIn extends Component {
             >
                 {this.state.err && (
                     <Paper className={classes.paperRoot} elevation={1}>
-                        <Typography component="span" style={{color: '#FFFFFF'}}>
+                        <Typography component={'span'} style={{color: '#FFFFFF'}}>
                             <FormattedMessage id="popup.loginfailed" />
                         </Typography>
                     </Paper>
@@ -207,14 +204,14 @@ class TabSignIn extends Component {
                 </Grid>
                 <Grid container spacing={24} alignItems="flex-end" style={{marginTop: 15}}>
                     <Grid item xs>                       
-                        <Typography component="span" variant="caption" gutterBottom align="left">
+                        <Typography component={'span'} variant="caption" gutterBottom align="left">
                             <FormattedMessage id="popup.notamember" /> 
-                            <span className={classes.spanClass} style={{marginLeft: 5}}><FormattedMessage id="popup.notasignup" /></span>
+                            {/* <span className={classes.spanClass} style={{marginLeft: 5}}><FormattedMessage id="popup.notasignup" /></span> */}
                         </Typography>
                     </Grid>
                     <Grid item xs>
-                        <Typography component="span" variant="caption" gutterBottom align="right">
-                            <span className={classes.spanClass} onClick={() => this.setState({showreset: true})}><FormattedMessage id="popup.forgot" /></span>
+                        <Typography component={'span'} variant="caption" gutterBottom align="right">
+                            {/* <span className={classes.spanClass} onClick={() => this.setState({showreset: true})}><FormattedMessage id="popup.forgot" /></span> */}
                         </Typography>
                     </Grid>
                 </Grid>
@@ -282,4 +279,4 @@ TabSignIn.propTypes = {
     login: PropTypes.func.isRequired
 }
 
-export default connect(null, { login })(withStyles(styles)(withRoot(withRouter(TabSignIn))))
+export default connect(null, { login })(withStyles(styles)(withRouter(TabSignIn)))

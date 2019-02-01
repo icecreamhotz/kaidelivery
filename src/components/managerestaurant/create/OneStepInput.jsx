@@ -5,8 +5,6 @@ import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography';
 import Restaurant from '@material-ui/icons/Restaurant';
-import withRoot from '../../input/InputStyle';
-import Alert from '../../loaders/Alert'
 import Divider from '@material-ui/core/Divider';
 import API from '../../../helper/api'
 import SweetAlert from 'sweetalert-react';
@@ -15,6 +13,7 @@ import { ValidatorForm, TextValidator} from 'react-material-ui-form-validator';
 import './button.scss'
 import { connect } from 'react-redux'
 import { updateRestaurantName } from '../../../actions/restaurant'
+import Loading from '../../loaders/loading'
 
 const styles = theme => ({
   root: {
@@ -37,12 +36,10 @@ class OneStepInput extends Component {
             fileimg: '', 
             preview: '', 
             altimg: '', 
-            loading: true, 
+            loading: false, 
             askopen: false,
             open: false, 
-            text: '', 
-            title: '', 
-            type:'' 
+            text: '',
         };
     }
 
@@ -68,31 +65,34 @@ class OneStepInput extends Component {
     }
 
     saveData = async () => {
-        let bodyFormData = new FormData()
-        bodyFormData.set('res_name', this.state.res_name)
-        bodyFormData.append('image', this.state.fileimg)
+        this.setState({
+            askopen: false,
+            loading: true
+        }, async () => {
+            let bodyFormData = new FormData()
+            bodyFormData.set('res_name', this.state.res_name)
+            bodyFormData.append('image', this.state.fileimg)
 
-        await API.post('/restaurants/create', bodyFormData, {
-            headers: {
-                'content-type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
-            this.setState({
-                askopen: false
+            await API.post('/restaurants/create', bodyFormData, {
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
             })
-
-            setTimeout(() => {
+            .then(() => {
                 this.setState({
-                    open: true,
-                    content: `${this.state.res_name} is available now !!`,
-                    title: 'Success',
-                    type: 'success',
+                    loading: false
+                }, () => {
+                    setTimeout(() => {
+                        this.setState({
+                            open: true,
+                            content: `${this.state.res_name} is available now !!`
+                        })
+                    }, 100); 
                 })
-            }, 1000);
-            
+
+            })
+            .catch(err => console.log(err))
         })
-        .catch(err => console.log(err))
     }
 
     closeAlert = () => {
@@ -103,8 +103,11 @@ class OneStepInput extends Component {
                 title: '',
                 type: '',
             }, () => {
-                this.props.updateRestaurantName(true)
-                this.props.handleNext()
+                setTimeout(() => {
+                    this.props.updateRestaurantName(true)
+                    this.props.handleNext()
+                    this.props.setResName(this.state.res_name)
+                }, 100);
             })
         }
     }
@@ -119,6 +122,7 @@ class OneStepInput extends Component {
         const { classes } = this.props;
         return (
             <div className={classes.root}>
+                { (this.state.loading ? <Loading loaded={this.state.loading} /> : '')}
                 <ValidatorForm
                     ref="form"
                     onSubmit={this.submit}
@@ -132,11 +136,11 @@ class OneStepInput extends Component {
                             </Typography>
                             <Divider />
                             <Grid item xs={12} sm={12} style={{marginTop: 30}}>
-                                <div class="circle">
-                                    <img class="profile-pic" src={this.state.preview} alt={this.state.altimg}/>
-                                    <div class="p-image">
-                                    <i class="fa fa-camera upload-button" onClick={() => this.imageInput.click()} style={{cursor:'pointer'}}></i>
-                                        <input class="file-upload" type="file" accept="image/*" ref={input => this.imageInput = input} onChange={(e) => this.handleImageChange(e)} />
+                                <div className="circle">
+                                    <img className="profile-pic" src={this.state.preview} alt={this.state.altimg}/>
+                                    <div className="p-image">
+                                    <i className="fa fa-camera upload-button" onClick={() => this.imageInput.click()} style={{cursor:'pointer'}}></i>
+                                        <input className="file-upload" type="file" accept="image/*" ref={input => this.imageInput = input} onChange={(e) => this.handleImageChange(e)} />
                                     </div>
                                 </div>
                             </Grid>
@@ -167,7 +171,6 @@ class OneStepInput extends Component {
                     </Grid>
                 </Grid>
                 </ValidatorForm>
-                <Alert open={this.state.open} title={this.state.title} type={this.state.type} content={this.state.content} close={this.closeAlert}/>
                 <SweetAlert
                     show={this.state.askopen}
                     title="Are you sure ?"
@@ -176,6 +179,15 @@ class OneStepInput extends Component {
                     onConfirm={() => this.saveData()}
                     onEscapeKey={() => this.setState({askopen: !this.state.askopen})}
                     onOutsideClick={() => { if(this.state.askopen) this.setState({askopen: !this.state.askopen}) }}
+                />
+                <SweetAlert
+                    show={this.state.open}
+                    title="Success"
+                    text={this.state.content}
+                    type="success"
+                    onConfirm={() => { if(this.state.open) this.closeAlert() }}
+                    onEscapeKey={() => { if(this.state.open) this.closeAlert() }}
+                    onOutsideClick={() => { if(this.state.open) this.closeAlert() }}
                 />
             </div>
         );
@@ -188,4 +200,4 @@ OneStepInput.propTypes = {
   updateRestaurantName: PropTypes.func.isRequired
 };
 
-export default connect(null, {updateRestaurantName: updateRestaurantName})(withStyles(styles)(withRoot(OneStepInput)));
+export default connect(null, {updateRestaurantName: updateRestaurantName})(withStyles(styles)(OneStepInput));

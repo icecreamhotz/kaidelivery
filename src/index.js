@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { BrowserRouter, Route } from 'react-router-dom'
+import { Route, HashRouter } from 'react-router-dom'
 
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
@@ -19,7 +19,6 @@ import { addLocaleData } from 'react-intl'
 import en from 'react-intl/locale-data/en'
 import th from 'react-intl/locale-data/th'
 import { localeSet } from './actions/locale'
-import axios from 'axios'
 
 addLocaleData(en)
 addLocaleData(th)
@@ -39,11 +38,11 @@ if(localStorage.lang) {
 }
 
 ReactDOM.render(
-    <BrowserRouter>
+    <HashRouter>
         <Provider store={store}>
-            <Route component={App} />
+            <Route component={App}/>
         </Provider>
-    </BrowserRouter>,
+    </HashRouter>,
     document.getElementById('root')
 );
 

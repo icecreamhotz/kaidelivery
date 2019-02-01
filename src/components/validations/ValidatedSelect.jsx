@@ -7,7 +7,6 @@ import { Color, ValidateError } from '../../variable/Color';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -68,28 +67,6 @@ function NoOptionsMessage(props) {
     >
       {props.children}
     </Typography>
-  );
-}
-
-function inputComponent({ inputRef, ...props }) {
-  return <div ref={inputRef} {...props} />;
-}
-
-function Control(props) {
-  return (
-    <TextField
-      fullWidth
-      InputProps={{
-        inputComponent,
-        inputProps: {
-          className: props.selectProps.classes.input,
-          inputRef: props.innerRef,
-          children: props.children,
-          ...props.innerProps,
-        },
-      }}
-      {...props.selectProps.textFieldProps}
-    />
   );
 }
 
@@ -169,22 +146,7 @@ const components = {
 class ValidatedSelect extends ValidatorComponent {
 
   shouldComponentUpdate(nextProps, nextState) {
-        if (this.props.errorMessages !== nextProps.errorMessages) {
-            return true
-        }
-        if (this.props.validators !== nextProps.validators) {
-            return true
-        }
-        if (this.props.requiredError !== nextProps.requiredError) {
-            return true
-        }
         if (this.props.value !== nextProps.value) {
-            return true
-        }
-        if (this.props.classes !== nextProps.classes) {
-            return true
-        }
-        if (this.props.theme !== nextProps.theme) {
             return true
         }
         if (this.state.isValid !== nextState.isValid) {

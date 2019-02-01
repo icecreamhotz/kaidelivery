@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import 'sweetalert/dist/sweetalert.css';
 
 import { IntlProvider } from 'react-intl'
-import { Switch, HashRouter  } from 'react-router-dom'
+import { Switch  } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import messages from './locale/messages'
@@ -13,15 +13,57 @@ import Layout from './components/Layout'
 import ForgotPassword from './components/user/ForgotPassword'
 import ResetPassword from './components/user/ResetPassword'
 import MyRestaurant from './components/managerestaurant/create/CreateRestaurant'
+import InfoRestaurant from './components/managerestaurant/retreive/InfoRestaurant'
 
 import UserRoute from './components/router/UserRoute'
 import GuestRoute from './components/router/GuestRoute'
+
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { Color } from './variable/Color';
+
+const theme = createMuiTheme({
+    overrides: {
+        MuiFormLabel: {
+            focused: {
+                "&$focused": {
+                    color: Color.kaidelivery
+                }
+            }
+        },
+        MuiInput: {
+            underline: {
+                "&:after": {
+                    borderBottomColor: Color.kaidelivery,
+                }
+            },
+        },
+        MuiCheckbox: {
+            colorSecondary: {
+                color: Color.kaidelivery,
+                '&$checked': {
+                    color: Color.kaidelivery,
+                }
+            }
+        },
+        MuiListItem: {
+            root: {
+                '&$selected, &$selected:hover, &$selected:focus': {
+                    backgroundColor: Color.kaideliveryLight
+                }
+            }
+        }
+    },
+    typography: {
+        useNextVariants: true,
+    },
+})
+
 
 class App extends Component {
   render() {
     const { location, lang } = this.props
     return (
-      <HashRouter>
+      <MuiThemeProvider theme={theme}>
         <IntlProvider key={lang} locale={lang} messages={messages[lang]}>
           <Layout>
                 <Switch>
@@ -30,11 +72,11 @@ class App extends Component {
                     <UserRoute location={location} path='/profile' component={Info} exact/>
                     <UserRoute location={location} path='/reset' component={ResetPassword} exact/>
                     <UserRoute location={location} path='/myrestaurant' component={MyRestaurant} exact/>
-                     <UserRoute location={location} path='/myrestaurant/:id' component={MyRestaurant} exact/>
+                    <UserRoute location={location} path='/myrestaurant/:resname' component={InfoRestaurant} exact/>
                 </Switch>
           </Layout>
         </IntlProvider>
-       </HashRouter>
+      </MuiThemeProvider>
     );
   }
 }

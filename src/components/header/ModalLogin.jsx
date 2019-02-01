@@ -48,7 +48,7 @@ class ModalLogin extends React.Component {
         </Button>
         <Dialog open={open} onClose={this.handleClose}>
           <DialogContent className={classes.root}>
-            <DialogContentText><TabSignInSignUp setClose={this.handleClose}/></DialogContentText>
+            <DialogContentText component={'div'}><TabSignInSignUp setClose={this.handleClose}/></DialogContentText>
           </DialogContent>
         </Dialog>
       </div>
