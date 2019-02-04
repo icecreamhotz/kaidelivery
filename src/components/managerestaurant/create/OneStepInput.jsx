@@ -14,6 +14,7 @@ import './button.scss'
 import { connect } from 'react-redux'
 import { updateRestaurantName } from '../../../actions/restaurant'
 import Loading from '../../loaders/loading'
+import green from '@material-ui/core/colors/green';
 
 const styles = theme => ({
   root: {
@@ -33,7 +34,7 @@ class OneStepInput extends Component {
         super(props);
          this.state = { 
             res_name: '',
-            fileimg: '', 
+            fileimg: null, 
             preview: '', 
             altimg: '', 
             loading: false, 
@@ -89,7 +90,6 @@ class OneStepInput extends Component {
                         })
                     }, 100); 
                 })
-
             })
             .catch(err => console.log(err))
         })
@@ -111,7 +111,7 @@ class OneStepInput extends Component {
             })
         }
     }
-    
+
     submit = (e) => {
         e.preventDefault()
 
@@ -135,11 +135,14 @@ class OneStepInput extends Component {
                                 Let's create a restaurant.
                             </Typography>
                             <Divider />
-                            <Grid item xs={12} sm={12} style={{marginTop: 30}}>
+                            <Grid item xs={12} sm={12} style={{marginTop: 30}}>       
                                 <div className="circle">
                                     <img className="profile-pic" src={this.state.preview} alt={this.state.altimg}/>
+                                    <Typography variant="caption" gutterBottom style={{color: green[300], display: 'inline', position: 'absolute', bottom: 0,marginLeft: 20}}>
+                                        *Optional
+                                    </Typography>            
                                     <div className="p-image">
-                                    <i className="fa fa-camera upload-button" onClick={() => this.imageInput.click()} style={{cursor:'pointer'}}></i>
+                                    <i className="fa fa-camera upload-button icon-image" onClick={() => this.imageInput.click()} style={{cursor:'pointer'}}><span className="icon-text">Choose Image</span></i>
                                         <input className="file-upload" type="file" accept="image/*" ref={input => this.imageInput = input} onChange={(e) => this.handleImageChange(e)} />
                                     </div>
                                 </div>
@@ -148,7 +151,7 @@ class OneStepInput extends Component {
                                 <Grid item xs={1}>
                                     <Restaurant className={"ic-color"}/>
                                 </Grid>
-                                <Grid item xs={3}>
+                                <Grid item xs={11} md={3}>
                                     <TextValidator 
                                         name="res_name" 
                                         label="Restaurant Name" 

@@ -52,6 +52,7 @@ class TabSignUp extends Component {
     state = {
         username: '',
         password: '',
+        confirm_password: '',
         name: '',
         lastname: '',
         email: '',
@@ -61,6 +62,15 @@ class TabSignUp extends Component {
         address: '',
         errusername: false,
         erremail: false
+    }
+
+    componentDidMount() {
+        ValidatorForm.addValidationRule('isPasswordMatch', (value) => {
+            if (value !== this.state.password) {
+                return false;
+            }
+            return true;
+        });
     }
 
     handleChange = name => event => {
@@ -99,7 +109,7 @@ class TabSignUp extends Component {
             return
         }
 
-        const tel = this.state.telephone1 + this.state.telephone2 + this.state.telephone3
+        const tel = `${this.state.telephone1} ${this.state.telephone2} ${this.state.telephone3}`
 
         const data = {
             username: this.state.username,
@@ -110,6 +120,7 @@ class TabSignUp extends Component {
             telephone: tel,
             address: this.state.address,
         }
+        console.log(data)
 
         this.props.signup(data).then(() => this.props.history.push('/profile'))
     }
@@ -168,6 +179,24 @@ class TabSignUp extends Component {
                             validators={['required', 'isPassword']}
                             errorMessages={['this field is required',
                             'Password must be more 8 characters and contains one lowercase and uppercase \n Example. Kaidelivery2561']}
+                        />
+                    </Grid>
+                </Grid>
+                <Grid container spacing={24} alignItems="flex-end" style={{marginTop: 20}}>
+                    <Grid item xs={12} sm={1}>
+                        <VpnKey className={"ic-color"}/>
+                    </Grid>
+                    <Grid item xs={12} md>
+                        <TextValidator
+                            name="confirm_password"
+                            label="Confirm Password"
+                            type="password"
+                            fullWidth
+                            value={this.state.confirm_password}
+                            onChange={this.handleChange('confirm_password')}
+                            validators={['required', 'isPasswordMatch']}
+                            errorMessages={['this field is required',
+                            'Password not match']}
                         />
                     </Grid>
                 </Grid>

@@ -33,6 +33,10 @@ class CreateRestaurant extends Component {
         loading: false
     };
 
+    componentDidMount() {
+        this.forceUpdate()
+    }
+
     handleNext = () => {
         this.setState(state => ({
         activeStep: state.activeStep + 1,
@@ -51,9 +55,9 @@ class CreateRestaurant extends Component {
 
     componentWillReceiveProps(newProps) {
         if(newProps.resetStep) {
-           this.setState({
-               activeStep: 0
-           })
+            this.setState({
+                activeStep: 0
+            }, () => this.props.updateTriggerURL(false))
         }
     }
 

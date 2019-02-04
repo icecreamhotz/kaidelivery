@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
+import { withRouter } from 'react-router-dom'
 import moment from 'moment';
 import 'moment/locale/th';
-import AutocompleteResTypes from './AutocompleteResTypes'
+import AutocompleteResTypes from '../create/AutocompleteResTypes'
 import ValidatedTimePicker from '../../validations/ValidatedTimePicker'
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid'
@@ -17,11 +18,11 @@ import Email from '@material-ui/icons/Email';
 import Divider from '@material-ui/core/Divider';
 import API from '../../../helper/api'
 import Button from '@material-ui/core/Button';
-import LocationSearching from '@material-ui/icons/LocationSearching';
 import { Color } from '../../../variable/Color';
 import withRules from '../../validations/validate'
 import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
 import { MuiPickersUtilsProvider } from 'material-ui-pickers'
+import GoogleMaps from '../create/GoogleMaps'
 import MomentUtils from '@date-io/moment';
 import red from '@material-ui/core/colors/red';
 import green from '@material-ui/core/colors/green';
@@ -92,15 +93,33 @@ const styles = theme => ({
             textAlign: 'center',
             paddingLeft: '30px !important'
         },
+    },
+    logo: {
+        width: 150,
+        height: 150,
+        margin: '0 auto'
+    },
+    hiddenInput: {
+        display: 'none'
+    },
+    undoImage: {
+        top: 0
+    },
+    iconRedo: {
+        cursor: 'pointer',
+        color: red[400],
+        '&:hover': {
+            color: red[300]
+        }
     }
 });
 
-
-class TwoStepInput extends Component {
+class EditRestaurant extends Component {
 
     constructor(props) {
         super(props);
          this.state = { 
+            old_resname: '',
             res_name: '',
             res_email: '',
             res_tel: {
@@ -125,17 +144,17 @@ class TwoStepInput extends Component {
             res_holiday: [],
             res_types: [],
             res_typesValue: [],
-            center: {
-                lat: 0, lng: 0, errorLatLng: true
-            },
-            loadingMap: false,
-            bounds: null,
-            inputLoading: false,
-            searchValue: ''
+            res_position: [],
+            fileimg: null, 
+            preview: '', 
+            altimg: '',
         };
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state.res_name !== nextState.res_name) {
+            return true
+        }
         if (this.state.res_email !== nextState.res_email) {
             return true
         }
@@ -193,42 +212,21 @@ class TwoStepInput extends Component {
         if (this.state.text !== nextState.text) {
             return true
         }
-        if (this.props.resName !== nextProps.resName) {
+        if (this.state.fileimg !== nextState.fileimg) {
             return true
         }
-        if (this.state.center.lat !== nextState.center.lat) {
+        if (this.state.preview !== nextState.preview) {
             return true
         }
-        if (this.state.center.lng !== nextState.center.lng) {
-            return true
-        }
-        if (this.state.center.errorLatLng !== nextState.center.errorLatLng) {
-            return true
-        }
-        if (this.state.loadingMap !== nextState.loadingMap) {
-            return true
-        }
-        if (this.state.inputLoading !== nextState.inputLoading) {
-            return true
-        }
-        if (this.state.searchValue !== nextState.searchValue) {
+        if (this.state.altimg !== nextState.altimg) {
             return true
         }
         return false
     }
 
-    componentWillReceiveProps(nextProps) {
-        if(nextProps.resName !== this.props.resName) {
-            this.setState({
-                res_name: nextProps.resName
-            })
-        }
-    }
-
     async componentDidMount() {
-        this.mounted = true;
-
         await this.fetchRestaurantTypes()
+        await this.fetchRestaurantData()
         
         ValidatorForm.addValidationRule('openTime', (value) => {
             if(moment(value).format('h:mma') === moment(this.state.res_close).format('h:mma')) {
@@ -266,11 +264,6 @@ class TwoStepInput extends Component {
         })
         
         this.onChangeValue = this.onChangeValue.bind(this)
-        this.getGeoLocation()
-    }
-
-    componentWillUnmount() {
-      this.mounted = false;
     }
 
     checkMyTelLength = (value) => {
@@ -286,10 +279,66 @@ class TwoStepInput extends Component {
         return false
     }
 
+    fetchRestaurantData = async () => {
+
+        const resname = this.props.match.params.resname
+        const restaurantvalue = await API.get(`restaurants/${resname}`)
+        const { data } = await restaurantvalue
+        const restaurant = data.data
+
+        if(restaurant.length === 0) {
+            this.props.history.push('/myrestaurant')
+        } else {
+            const old_resTypes = this.state.res_types
+            const new_resTypes = old_resTypes.filter((cv) => {
+                return restaurant.restype_id.find((e) => {
+                    return cv.restype_id === e
+                }) 
+            }).map(item => { return {value: item.restype_id, label: item.restype_name } })
+
+            const getlat = (restaurant.res_lat !== null ? restaurant.res_lat : 0)
+            const getlng = (restaurant.res_lng !== null ? restaurant.res_lng : 0)
+            
+            this.setState({
+                old_resname: restaurant.res_name,
+                res_logo: restaurant.res_logo,
+                res_name: restaurant.res_name,
+                res_email: restaurant.res_email,
+                res_details: restaurant.res_details,
+                res_address: restaurant.res_address,
+                res_open: new Date(`December 17, 1997 ${restaurant.res_open}`),
+                res_close: new Date(`December 17, 1997 ${restaurant.res_close}`),
+                res_holiday: restaurant.res_holiday,
+                res_typesValue: new_resTypes,
+                res_position: [getlat , getlng],
+                loading: false
+            }, () => {
+                this.setTelephone(restaurant.res_telephone)
+            })
+        }
+    }
+
+    setTelephone = (telephone) => {
+        if(telephone.length > 0) {
+            this.setState({
+                res_tel: {
+                    res_tel1: telephone[0].substring(0, 3), 
+                    res_tel2: telephone[0].substring(3, 6),
+                    res_tel3: telephone[0].substring(6, 10),
+                },
+                my_tel: {
+                    my_tel1: (telephone[1] ? telephone[1].substring(0, 3) : ''),
+                    my_tel2: (telephone[1] ? telephone[1].substring(3, 6) : ''),
+                    my_tel3: (telephone[1] ? telephone[1].substring(6, 10) : ''),
+                },
+            })
+        }
+    }
+
     fetchRestaurantTypes = async () => {
         const resTypes = await API.get('restauranttypes/')
         const { data } = await resTypes
-        this.setState({ res_types: data.data, loading: false });
+        this.setState({ res_types: data.data })
     }
 
     handleDateChange = name => date => {
@@ -311,7 +360,7 @@ class TwoStepInput extends Component {
 
         this.setState({
             res_holiday: newArr
-        }, () => console.log(this.state.res_holiday));
+        });
     }
 
     onChangeValue = name => event => {
@@ -411,11 +460,10 @@ class TwoStepInput extends Component {
     setResTypesValueFromChild = (value) => {
         this.setState({
             res_typesValue: value
-        })
+        }, () => console.log(this.state.res_typesValue))
     }
 
     setLatLngValue = (position) => {
-        console.log(position)
         const pos = [position.lat, position.lng]
         this.setState({ res_position: pos})
     }
@@ -425,7 +473,8 @@ class TwoStepInput extends Component {
             open: false,
             loading: true
         }, async () => {
-            const { center, res_name, res_email, res_tel, my_tel, res_details, res_address, res_open, res_close, res_holiday, res_typesValue } = this.state
+            
+            const { old_resname, res_name, res_email, res_tel, my_tel, res_details, res_address, res_open, res_close, res_holiday, res_typesValue, res_position, fileimg } = this.state
 
             const resTelephone = res_tel.res_tel1 + res_tel.res_tel2 + res_tel.res_tel3
             const myTelephone = (my_tel.my_tel1.length > 0 ? my_tel.my_tel1 + my_tel.my_tel2 + my_tel.my_tel3 : '')
@@ -433,34 +482,40 @@ class TwoStepInput extends Component {
             const telephone = [resTelephone, myTelephone]
             const restypesValue = res_typesValue.map(item => item.value)
 
-            const restaurantData = {
-                res_name: res_name,
-                res_email: res_email,
-                res_telephone: JSON.stringify(telephone),
-                res_details: res_details,
-                res_address: res_address,
-                res_open: moment(res_open).format('HH:mm'),
-                res_close: moment(res_close).format('HH:mm'),
-                res_holiday: (res_holiday.length > 0 ? JSON.stringify(res_holiday) : null),
-                res_typesValue: (restypesValue.length > 0 ? JSON.stringify(restypesValue) : null),
-                res_lat: center.lat,
-                res_lng: center.lng
-            }
+            let bodyFormData = new FormData()
+            bodyFormData.set('res_name', res_name)
+            bodyFormData.set('res_email', res_email)
+            bodyFormData.set('res_telephone', JSON.stringify(telephone))
+            bodyFormData.set('res_details', res_details)
+            bodyFormData.set('res_address', res_address)
+            bodyFormData.set('res_open', moment(res_open).format('HH:mm'))
+            bodyFormData.set('res_close', moment(res_close).format('HH:mm'))
+            bodyFormData.set('res_holiday', (res_holiday.length > 0 ? JSON.stringify(res_holiday) : null))
+            bodyFormData.set('res_typesValue', (restypesValue.length > 0 ? JSON.stringify(restypesValue) : null))
+            bodyFormData.set('res_lat', res_position[0])
+            bodyFormData.set('res_lng', res_position[1])
+            bodyFormData.append('image', fileimg)
 
-            await API.post(`restaurants/update/${this.state.res_name}`, restaurantData).then(() => {
+            await API.post(`/restaurants/update/${old_resname}`, bodyFormData, {
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
+            })
+            .then((res) => {
                 this.setState({
                     loading: false,
                 }, () => {
                     setTimeout(() => {
                         this.setState({
                             type: 'success',
-                            text: 'Inserted successful',
+                            text: 'Updated successful',
                             title: 'Success',
                             open: true
                         })
                     }, 100);
                 })
-            }) 
+            })
+            .catch(err => console.log(err))
         })
     }
 
@@ -471,13 +526,36 @@ class TwoStepInput extends Component {
                 open: false
             }, () => {
                 setTimeout(() => {
-                    this.props.handleNext()
+                    this.props.changeValueComponent(1)
                 }, 100);
             })
         } 
         if (type === 'info' ){
             this.onSubmit()
         }
+    }
+
+    redoImage = () => {
+        this.setState({
+            preview: '',
+            fileimg: null,
+            altimg: ''
+        })
+    }
+    
+    handleImageChange = (e) => {
+        const reader = new FileReader()
+        const file = e.target.files[0]
+
+        reader.onloadend = () => {
+            this.setState({
+                fileimg: file,
+                preview: reader.result,
+                altimg: file.name
+            })
+        }
+
+        reader.readAsDataURL(file)
     }
 
     handleSubmit = (e) => {
@@ -488,173 +566,12 @@ class TwoStepInput extends Component {
         }) 
     }
 
-    onMapMounted = map => {
-        this._map = map
-    }
-
-    onMarkerMounted = marker => {
-        this._marker = marker
-    }
-
-    onBoundsChanged = () => _.debounce(
-        () => {
-            if (this.mounted) {
-                this.setState(prevState => ({
-                    bounds: this._map.getBounds(),
-                        center: {
-                            ...prevState.center,
-                            lat: parseFloat(this._map.getCenter().lat()),
-                            lng: parseFloat(this._map.getCenter().lng())
-                        } 
-                    }))
-                let {
-                    onBoundsChange
-                } = this.props
-                    if(onBoundsChange) {
-                        onBoundsChange(this._map)
-                    }
-                }
-            },
-            100, {
-                maxWait: 300
-            }
-    )
-
-    onSearchBoxMounted = searchBox => {
-        this._searchBox = searchBox;
-    }
-
-    onPlacesChanged = () => {
-        const places = this._searchBox.getPlaces();
-
-        if(places[0]) {
-            const nameRestaurant = `${places[0].name} ${places[0].formatted_address}`
-            this.setState(prevState => ({
-                    center: {
-                        ...prevState.center,
-                        lat: parseFloat(places[0].geometry.location.lat()),
-                        lng: parseFloat(places[0].geometry.location.lng())
-                },
-                searchValue: nameRestaurant
-            }))
-        }
-    }
-
-    onMapClick = (e) => {
-        this.setState({loadingMap: true})
-        this.setState(prevState => ({
-            center: {
-                ...prevState.center,
-                lat: parseFloat(e.latLng.lat()),
-                lng: parseFloat(e.latLng.lng()),
-            } 
-        }), () => this.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng))
-    }
-        
-    getGeoLocation = () => {
-          if(navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    this.setState(prevState => ({
-                        center: {
-                            ...prevState.center,
-                            lat: parseFloat(position.coords.latitude),
-                            lng: parseFloat(position.coords.longitude),
-                            errorLatLng: false
-                        }   
-                    }), () => {
-                      if(this.isSearch) { this.onClickGetLocation() }
-                      else { 
-                        this.setState(prevState => ({ isSearch: true })) 
-                        this.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng)
-                      }
-                    })
-                },
-                error => console.log(error)
-            )
-          }
-    }
-
-    onClickGetLocation = () => { 
-            this.setState({loading: true})
-            const {lat, lng} = this.state.center;
-
-            const bounds = new window.google.maps.LatLngBounds();
-            const latlng = new window.google.maps.LatLng(lat + 0.001 , lng + 0.001);
-            const latlng2 = new window.google.maps.LatLng(lat - 0.001 , lng - 0.001);
-            bounds.extend(latlng);
-            bounds.extend(latlng2);
-
-            this._map.fitBounds(bounds);
-            this.setValueToPlaceSearch(lat, lng);
-    }
-
-    onDragMap = () => {
-          this.setState(prevState => ({
-              center: {
-                ...prevState.center,
-                lat: parseFloat(this._map.getCenter().lat()),
-                lng: parseFloat(this._map.getCenter().lng())
-              },
-          }), () => this.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng))
-    }
-        
-    setValueToPlaceSearch = (lat, lng) => {
-            if(!this.state.loading || !this.state.inputLoading || this.state.searchValue !== '') {
-                this.setState({loadingMap: true, inputLoading: true, searchValue: ''})
-            }
-            try {
-                const geocoder = new window.google.maps.Geocoder()
-                const latlng = {lat: lat, lng: lng}
-                
-                geocoder.geocode({'location': latlng}, (results, status) => {
-                    if(status === window.google.maps.GeocoderStatus.OK) {
-                    if(results[1]) {
-                        const request = {
-                        location: latlng,
-                        radius: 10,
-                        type : ["restaurant"]
-                        }
-                        if(this._map) {
-                        const service = new window.google.maps.places.PlacesService(this._map.context.__SECRET_MAP_DO_NOT_USE_OR_YOU_WILL_BE_FIRED);
-                        service.nearbySearch(request, (place, status) => {
-                            if(status === window.google.maps.places.PlacesServiceStatus.OK) {
-                            const myRestaurant = `${place[0].name} ${place[0].vicinity}`
-                            this.setState({
-                                searchValue: myRestaurant,
-                                loadingMap: false,
-                                inputLoading: false,
-                            });
-                            } else {
-                            this.setState({
-                                searchValue: results[1].formatted_address,
-                                loadingMap: false,
-                                inputLoading: false,
-                            });
-                            }
-                        });
-                        }
-                    }
-                    } else {
-                    this.setState({
-                        loadingMap: false,
-                        inputLoading: false,
-                    });
-                    }
-                });
-            } catch(e) {
-                this.forceUpdate();
-            }
-    }
-
-    onChangeSearchBox = (e) => {
-        this.setState({
-            searchValue : e.target.value
-        })
-    }
-
     render() {
-        const { classes, isScriptLoadSucceed } = this.props;
+        const { classes } = this.props;
+        const { res_logo, preview, altimg } = this.state
+        const getImage = `http://localhost:3000/restaurants/${(res_logo ? res_logo : 'noimg.png')}`
+        const showImage = (preview !== '' ? preview : getImage)
+        const altImage = (preview !== '' ? altimg : getImage)
         return (
             <div className={classes.root}>
                 <ValidatorForm
@@ -666,21 +583,61 @@ class TwoStepInput extends Component {
                         <Grid container spacing={24} style={{paddingTop: 30, paddingBottom: 30}}>
                             <Grid item container>
                                 <Typography variant="h4" gutterBottom align="left">
-                                    Setting your restaurant informations
+                                    {`${this.state.old_resname} details`}
                                 </Typography>
                                 <Divider style={{width: '100%'}}/>
                             </Grid>
-                            <Grid item xs={12} container>
-                                <Grid item container>
-                                    <Typography variant="h6" gutterBottom align="left">
-                                        {this.state.res_name} details
-                                    </Typography>
+                            <Grid item xs={12} container justify="center">
+                                <Grid item xs={12}>
+                                    <div className="circle">
+                                        <img className="profile-pic" src={showImage} alt={altImage}/>
+                                        <Typography variant="caption" gutterBottom style={{color: green[300], display: 'inline', position: 'absolute', bottom: 0,marginLeft: 20}}>
+                                            *Optional
+                                        </Typography>            
+                                        <div className={`p-image ${classes.undoImage}`}>
+                                            <i className={`fas fa-redo upload-button icon-image ${classes.iconRedo}`} onClick={() => this.redoImage()}><span className="icon-text">Redo Image</span></i>
+                                        </div>
+                                    </div>
                                 </Grid>
+                                <Grid item xs style={{marginTop: 15}}>
+                                     <input
+                                        accept="image/*"
+                                        className={classes.hiddenInput}
+                                        id="images"
+                                        type="file"
+                                        onChange={(e) => this.handleImageChange(e)}
+                                    />
+                                    <label htmlFor="images">
+                                        <Button  variant="contained" color="secondary" component="span">
+                                            Browse
+                                        </Button>
+                                    </label>
+                                </Grid>
+                            </Grid>
+                            <Grid item xs={12} container>
                                 <Grid item container alignItems="flex-end" spacing={24}>
                                     <Grid item xs={1}>
                                         <Email className={"ic-color"}/>
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs>
+                                        <TextValidator 
+                                            name="res_name" 
+                                            label="Restaurant Name" 
+                                            value={this.state.res_name} 
+                                            onChange={this.onChangeValue('res_name')} 
+                                            validators={['required']}
+                                            errorMessages={['this field is required']}
+                                            fullWidth
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                            <Grid item xs={12} container>
+                                <Grid item container alignItems="flex-end" spacing={24}>
+                                    <Grid item xs={1}>
+                                        <Description className={"ic-color"}/>
+                                    </Grid>
+                                    <Grid item xs>
                                         <TextValidator 
                                             name="res_email" 
                                             label="Email" 
@@ -790,7 +747,7 @@ class TwoStepInput extends Component {
                                                     Contact Number 
                                                 <Typography variant="caption" gutterBottom style={{color: green[300], display: 'inline', marginLeft: 20}}>
                                                     *Optional
-                                                </Typography>
+                                               </Typography>
                                             </Typography>
                                         </Grid>
                                         <Grid container item xs spacing={24} style={{marginTop:10}}>
@@ -987,7 +944,7 @@ class TwoStepInput extends Component {
                                             <Checkbox
                                             onChange={this.handleHoliday}
                                             value="จ"
-                                            style={{}}
+                                            checked={(this.state.res_holiday.includes('จ'))}
                                             />
                                         }
                                         label="จันทร์"
@@ -997,6 +954,7 @@ class TwoStepInput extends Component {
                                             <Checkbox
                                             onChange={this.handleHoliday}
                                             value="อ"
+                                            checked={(this.state.res_holiday.includes('อ'))}
                                             />
                                         }
                                         label="อังคาร"
@@ -1006,6 +964,7 @@ class TwoStepInput extends Component {
                                             <Checkbox
                                             onChange={this.handleHoliday}
                                             value="พ"
+                                            checked={(this.state.res_holiday.includes('พ'))}
                                             />
                                         }
                                         label="พุธ"
@@ -1015,6 +974,7 @@ class TwoStepInput extends Component {
                                             <Checkbox
                                             onChange={this.handleHoliday}
                                             value="พฤ"
+                                            checked={(this.state.res_holiday.includes('พฤ'))}
                                             />
                                         }
                                         label="พฤหัสบดี"
@@ -1024,6 +984,7 @@ class TwoStepInput extends Component {
                                             <Checkbox
                                             onChange={this.handleHoliday}
                                             value="ศ"
+                                            checked={(this.state.res_holiday.includes('ศ'))}
                                             />
                                         }
                                         label="ศุกร์"
@@ -1033,6 +994,7 @@ class TwoStepInput extends Component {
                                             <Checkbox
                                             onChange={this.handleHoliday}
                                             value="ส"
+                                            checked={(this.state.res_holiday.includes('ส'))}
                                             />
                                         }
                                         label="เสาร์"
@@ -1042,6 +1004,7 @@ class TwoStepInput extends Component {
                                             <Checkbox
                                             onChange={this.handleHoliday}
                                             value="อา"
+                                            checked={(this.state.res_holiday.includes('อา'))}
                                             />
                                         }
                                         label="อาทิตย์"
@@ -1060,71 +1023,7 @@ class TwoStepInput extends Component {
                                         <Email className={"ic-color"}/>
                                     </Grid>
                                     <Grid item xs>
-                                        {/* <GoogleMaps key="map" onClickCurrentLocation={this.getGeoLocation} showed={true} lat={null} lng={null} setPosition={this.setLatLngValue}/> */}
-                                      
-                                        {
-                                            isScriptLoadSucceed &&
-                                            <div data-standalone-searchbox="">
-                                                <div style={{
-                                                    position: 'relative',
-                                                    marginBottom: 10
-                                                }}>
-                                                    <StandaloneSearchBox
-                                                        ref={this.onSearchBoxMounted}
-                                                        bounds={this.bounds}
-                                                        onPlacesChanged={this.onPlacesChanged}
-                                                    >
-                                                        <input
-                                                            type="text"
-                                                            placeholder={this.state.inputLoading ? '' : 'Search your restaurant.'}
-                                                            style={{
-                                                                boxSizing: `border-box`,
-                                                                border: `1px solid transparent`,
-                                                                width: `100%`,
-                                                                height: `42px`,
-                                                                padding: `0 12px`,
-                                                                borderRadius: `3px`,
-                                                                boxShadow: `0 2px 6px rgba(0, 0, 0, 0.3)`,
-                                                                fontSize: `14px`,
-                                                                outline: `none`,
-                                                                textOverflow: `ellipses`,
-                                                            }}
-                                                            value={this.state.searchValue}
-                                                            onChange={this.onChangeSearchBox}
-                                                        />
-                                                    </StandaloneSearchBox>
-                                                    <button type="button" style={{
-                                                        position: 'absolute',
-                                                        background: 'transparent',
-                                                        right: 15,
-                                                        top: 4,
-                                                        border: 'none',
-                                                        height: 30,
-                                                        width: 30,
-                                                        outline: 'none',
-                                                        textAlign: 'center',
-                                                        fontWeight: 'bold',
-                                                        padding: 3,
-                                                        cursor: 'pointer'
-                                                    }} onClick={this.getGeoLocation}><LocationSearching style={{color: Color.kaidelivery}} /></button>
-                                                    { this.state.inputLoading && <span className="inside-input" style={{
-                                                        position: 'absolute',
-                                                        left: 15,
-                                                        top: 4,
-                                                    }}></span> }
-                                                </div>
-                                                <MapWithAMarker
-                                                    loadingElement= {<div style={{ height: `100%` }} />}
-                                                    containerElement= {<div style={{ height: `400px`, display: 'flex', flexDirection: 'column-reverse',position: 'relative' }} />}
-                                                    mapElement= {<div style={{ height: `100%` }} />}
-                                                    onMapLoad={this.onMapMounted}
-                                                    center={this.state.center}
-                                                    onMapClick={this.onMapClick}
-                                                    onDragEnd={this.onDragMap}
-                                                    loading={this.state.loadingMap}
-                                                />
-                                            </div>
-                                        }
+                                         <GoogleMaps key="map" lat={this.state.res_position[0]} showed={false} lng={this.state.res_position[1]} onClickCurrentLocation={this.getGeoLocation} setPosition={this.setLatLngValue}/>
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -1152,8 +1051,8 @@ class TwoStepInput extends Component {
     }
 }
 
-TwoStepInput.propTypes = {
+EditRestaurant.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default scriptLoader('https://maps.googleapis.com/maps/api/js?key=AIzaSyDCkgDceoiSbeWa29pNeJxmsNipUF7P3uw&v=3.exp&libraries=geometry,drawing,places')(withStyles(styles)(withRules(TwoStepInput)));
+export default withRouter(withStyles(styles)(withRules(EditRestaurant)));

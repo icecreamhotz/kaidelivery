@@ -82,6 +82,7 @@ class Info extends Component {
 
     async componentDidMount() {
         await API.get(`users/info`).then(res => {
+            console.log(res)
             this.setState({
                 name: res.data.user.name,
                 lastname: res.data.user.lastname,

@@ -9,15 +9,14 @@ class AutocompleteResTypes extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            multi: null,
+            multi: this.props.data
         };
     }
 
     handleChange = name => value => {
-        console.log(value)
         this.setState({
             [name]: value,
-        });
+        }, () => console.log(this.state.multi));
         this.props.setResTypesValueFromChild(value)
     };
 
@@ -40,12 +39,13 @@ class AutocompleteResTypes extends React.Component {
                 value: types.restype_id,
                 label: types.restype_name
             }))
-
+        console.log(this.props.data)
         return (
         <div>
             <ValidatedSelect
                 name="res_types"
                 options={getResTypes}
+                defaultValue={this.props.data}
                 value={this.state.multi}
                 onChange={this.handleChange('multi')}
                 placeholder="Select multiple restaurant types"

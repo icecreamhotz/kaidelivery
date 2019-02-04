@@ -12,22 +12,21 @@ export class LoaderInfo extends React.Component {
                             <Grid item xs={12} lg={3} style={{padding: 10}}>
 								<ContentLoader 
 									rtl
-									height={500}
-									width={400}
+									height={800}
+									width={320}
 									speed={2}
 									primaryColor="#f3f3f3"
 									secondaryColor="#ecebeb"
 								>
 									<circle cx="176.22" cy="155" r="100" /> 
-									<rect x="58.69" y="285" rx="0" ry="0" width="241.81" height="5.59" />
 									<rect x="33.69" y="310" rx="0" ry="0" width="281.81" height="15.59" />
 								</ContentLoader>
 							</Grid>
 							<Grid item xs style={{padding: 10}}>
 								<ContentLoader 
 									rtl
-									height={200}
-									width={400}
+									height={800}
+									width={360}
 									speed={2}
 									primaryColor="#f3f3f3"
 									secondaryColor="#ecebeb"

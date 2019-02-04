@@ -13,7 +13,7 @@ import Layout from './components/Layout'
 import ForgotPassword from './components/user/ForgotPassword'
 import ResetPassword from './components/user/ResetPassword'
 import MyRestaurant from './components/managerestaurant/create/CreateRestaurant'
-import InfoRestaurant from './components/managerestaurant/retreive/InfoRestaurant'
+import IndexRestaurant from './components/managerestaurant/IndexRestaurant'
 
 import UserRoute from './components/router/UserRoute'
 import GuestRoute from './components/router/GuestRoute'
@@ -63,20 +63,20 @@ class App extends Component {
   render() {
     const { location, lang } = this.props
     return (
-      <MuiThemeProvider theme={theme}>
-        <IntlProvider key={lang} locale={lang} messages={messages[lang]}>
+    <IntlProvider key={lang} locale={lang} messages={messages[lang]}>
+        <MuiThemeProvider theme={theme}>
           <Layout>
                 <Switch>
-                    <GuestRoute location={location} path='/' component={Welcome} exact/>
-                    <GuestRoute location={location} path='/reset/:token' component={ForgotPassword} exact/>
-                    <UserRoute location={location} path='/profile' component={Info} exact/>
-                    <UserRoute location={location} path='/reset' component={ResetPassword} exact/>
-                    <UserRoute location={location} path='/myrestaurant' component={MyRestaurant} exact/>
-                    <UserRoute location={location} path='/myrestaurant/:resname' component={InfoRestaurant} exact/>
+                    <GuestRoute exact location={location} path='/' component={Welcome} />
+                    <GuestRoute location={location} path='/reset/:token' component={ForgotPassword} />
+                    <UserRoute location={location} path='/profile' component={Info} />
+                    <UserRoute location={location} path='/reset' component={ResetPassword} />
+                    <UserRoute  exact location={location} path='/myrestaurant' component={MyRestaurant} />
+                    <UserRoute location={location} path='/myrestaurant/:resname' component={IndexRestaurant} />
                 </Switch>
           </Layout>
-        </IntlProvider>
-      </MuiThemeProvider>
+        </MuiThemeProvider>
+    </IntlProvider>
     );
   }
 }

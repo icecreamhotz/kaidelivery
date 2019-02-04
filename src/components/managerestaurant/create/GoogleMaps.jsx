@@ -12,12 +12,12 @@ const {
   Marker,
 } = require("react-google-maps");
 
-
 const Maps = compose(
   lifecycle({
     componentWillMount() {
       const refs = {}
       this.setState({
+        detectReceive: true,
         inputLoading: false,
         loading: false,
         isSearch: false,
@@ -62,23 +62,20 @@ const Maps = compose(
         onPlacesChanged: () => {
           const places = refs.searchBox.getPlaces();
 
-          for(let i = 0; i < places.length; i++) {
-            if(places[i].types.some(item => item === 'restaurant')) {
-              const nameRestaurant = `${places[i].name} ${places[i].formatted_address}`
+            if(places[0]) {
+              const nameRestaurant = `${places[0].name} ${places[0].formatted_address}`
               this.setState(prevState => ({
                 center: {
                   ...prevState.center,
-                  lat: parseFloat(places[i].geometry.location.lat()),
-                  lng: parseFloat(places[i].geometry.location.lng())
+                  lat: parseFloat(places[0].geometry.location.lat()),
+                  lng: parseFloat(places[0].geometry.location.lng())
                 },
                 searchValue: nameRestaurant
-              }))
-              break;
+              }), () => this.props.setPosition(this.state.center))
             }
-          }
         },
         onMapClick: (e) => {
-             this.setState({loading: true}, () => console.log(this.state.loading))
+             this.setState({loading: true})
             this.setState(prevState => ({
                 center: {
                   ...prevState.center,
@@ -91,7 +88,6 @@ const Maps = compose(
           if(navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 position => {
-                    console.log(position.coords)
                     this.setState(prevState => ({
                         center: {
                             ...prevState.center,
@@ -112,7 +108,7 @@ const Maps = compose(
           }
         },
         onClickGetLocation: () => { 
-             this.setState({loading: true}, () => console.log(this.state.loading))
+             this.setState({loading: true})
             const {lat, lng} = this.state.center;
 
             const bounds = new google.maps.LatLngBounds();
@@ -131,15 +127,15 @@ const Maps = compose(
                 lat: parseFloat(refs.map.getCenter().lat()),
                 lng: parseFloat(refs.map.getCenter().lng())
               },
-          }), () => this.state.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng));
+          }), () => this.state.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng))
         },
         setValueToPlaceSearch: (lat, lng) => {
           if(!this.state.loading || !this.state.inputLoading || this.state.searchValue !== '') {
             this.setState({loading: true, inputLoading: true, searchValue: ''})
           }
 
-          const geocoder = new google.maps.Geocoder();
-          const latlng = {lat: lat, lng: lng};
+          const geocoder = new google.maps.Geocoder()
+          const latlng = {lat: lat, lng: lng}
           
           geocoder.geocode({'location': latlng}, (results, status) => {
             if(status === google.maps.GeocoderStatus.OK) {
@@ -153,18 +149,18 @@ const Maps = compose(
                   const service = new google.maps.places.PlacesService(refs.map.context.__SECRET_MAP_DO_NOT_USE_OR_YOU_WILL_BE_FIRED);
                   service.nearbySearch(request, (place, status) => {
                     if(status === google.maps.places.PlacesServiceStatus.OK) {
-                      const myRestaurant = `${place[0].name} ${place[0].vicinity}`;
+                      const myRestaurant = `${place[0].name} ${place[0].vicinity}`
                       this.setState({
                         searchValue: myRestaurant,
                         loading: false,
                         inputLoading: false,
-                      }, () => this.props.setPosition(this.state.center));
+                      }, () => this.props.setPosition(this.state.center) );
                     } else {
                       this.setState({
                         searchValue: results[1].formatted_address,
                         loading: false,
                         inputLoading: false,
-                      }, () => this.props.setPosition(this.state.center));
+                      }, () => this.props.setPosition(this.state.center) );
                     }
                   });
                 }
@@ -173,7 +169,7 @@ const Maps = compose(
               this.setState({
                 loading: false,
                 inputLoading: false,
-              }, () => this.props.setPosition(this.state.center));
+              }, () => this.props.setPosition(this.state.center) );
             }
           });
         },
@@ -182,7 +178,9 @@ const Maps = compose(
               searchValue : e.target.value
             })
         },
-        shouldComponentUpdate(nextProps, nextState) {
+      })
+    },
+    shouldComponentUpdate(nextProps, nextState) {
           if (this.state.inputLoading !== nextProps.inputLoading) {
             return true;
           }
@@ -199,15 +197,28 @@ const Maps = compose(
             return true;
           }
           return false;
-        }
-      })
-    },
+        },
     componentDidMount() {
       this.mounted = true;
-      this.state.getGeoLocation()
     },
     componentWillUnmount() {
       this.mounted = false;
+    },
+    componentWillReceiveProps(nextProps) {
+          if(nextProps.showed){
+            this.state.getGeoLocation()
+          }else {
+            this.setState(prevState => ({
+              center: {
+                ...prevState.center,
+                    lat: parseFloat(nextProps.lat),
+                    lng: parseFloat(nextProps.lng),
+                    errorLatLng: false
+              }   
+            }), () => {
+              this.state.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng)
+            })
+          }
     }
   }),
   withGoogleMap
@@ -226,10 +237,11 @@ const Maps = compose(
         <GoogleMap
             ref={props.onMapMounted}
             defaultZoom={17}
-            center={props.center}
+            center={new google.maps.LatLng(props.center.lat, props.center.lng)}
             onBoundsChanged={props.onBoundsChanged}
             onClick={props.onMapClick}
             onDragEnd={props.onDragMap}
+            onZoomChanged={props.onDragMap}
             defaultOptions={{
               streetViewControl: false,
               scaleControl: false,
@@ -244,7 +256,7 @@ const Maps = compose(
         </GoogleMap>
         {
           props.loading &&
-          <div className={"loading-google"}>
+          <div className="loading-google" style={{top: 60}}>
             <div className="loading-google-spin">
             </div>
           </div>
@@ -253,6 +265,7 @@ const Maps = compose(
 );
 
 class GoogleMaps extends React.Component {
+
   render() {
     const {isScriptLoadSucceed} = this.props; 
     return (
@@ -263,7 +276,11 @@ class GoogleMaps extends React.Component {
           containerElement= {<div style={{ height: `400px`, display: 'flex', flexDirection: 'column-reverse',position: 'relative' }} />}
           mapElement= {<div style={{ height: `100%` }} />}
           onClickCurrentLocation={this.props.onClickCurrentLocation} 
-          setPosition={this.props.setPosition}/>}
+          setPosition={this.props.setPosition}
+          lat={this.props.lat}
+          lng={this.props.lng}
+          showed={this.props.showed}
+        />}
       </div>
     );
   }

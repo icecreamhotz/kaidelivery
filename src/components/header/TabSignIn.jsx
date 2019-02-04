@@ -206,12 +206,12 @@ class TabSignIn extends Component {
                     <Grid item xs>                       
                         <Typography component={'span'} variant="caption" gutterBottom align="left">
                             <FormattedMessage id="popup.notamember" /> 
-                            {/* <span className={classes.spanClass} style={{marginLeft: 5}}><FormattedMessage id="popup.notasignup" /></span> */}
+                            <span className={classes.spanClass} style={{marginLeft: 5}}><FormattedMessage id="popup.notasignup" /></span>
                         </Typography>
                     </Grid>
                     <Grid item xs>
                         <Typography component={'span'} variant="caption" gutterBottom align="right">
-                            {/* <span className={classes.spanClass} onClick={() => this.setState({showreset: true})}><FormattedMessage id="popup.forgot" /></span> */}
+                            <span className={classes.spanClass} onClick={() => this.setState({showreset: true})}><FormattedMessage id="popup.forgot" /></span>
                         </Typography>
                     </Grid>
                 </Grid>

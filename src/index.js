@@ -38,11 +38,12 @@ if(localStorage.lang) {
 }
 
 ReactDOM.render(
-    <HashRouter>
-        <Provider store={store}>
+    <Provider store={store}>
+        <HashRouter>
             <Route component={App}/>
-        </Provider>
-    </HashRouter>,
+        </HashRouter>
+    </Provider>
+    ,
     document.getElementById('root')
 );
 

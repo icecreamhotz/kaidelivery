@@ -27,7 +27,7 @@ import './loading.scss'
 import { FormattedMessage, injectIntl } from 'react-intl'
 import { NavLink } from 'react-router-dom';
 import { setLocale } from '../../actions/locale'
-import { updateRestaurantName, updateTriggerURL } from '../../actions/restaurant'
+import { updateRestaurantName, updateTriggerURL, updateTriggerComponent } from '../../actions/restaurant'
 import thailand from '../../resource/images/thailand.png'
 import english from '../../resource/images/english.png'
 import API from '../../helper/api'
@@ -212,6 +212,9 @@ class Header extends Component {
         if(this.state.selectedIndex !== nextState.selectedIndex) {
             return true;
         }
+        if(this.props.location.pathname !== nextProps.location.pathname) {
+            return true;
+        }
         return false
     }
     
@@ -258,6 +261,11 @@ class Header extends Component {
             await this.fetchRestaurantUser()
             await this.props.updateRestaurantName(false)
         }
+        if(nextProps.location.pathname === '/myrestaurant') {
+            this.setState({
+                selectedIndex: '/myrestaurant'
+            })
+        }
     }
     
     handleDrawerOpen = () => {
@@ -272,6 +280,13 @@ class Header extends Component {
         if(index === '/myrestaurant') {
             this.props.updateTriggerURL(true)
         }
+
+        this.setState({ selectedIndex: index})
+    }
+    
+    handleListResItemClick = (event, index) => {
+        this.props.updateTriggerComponent(true)
+
         this.setState({ selectedIndex: index})
     }
 
@@ -413,7 +428,7 @@ class Header extends Component {
                                         <List component="div" disablePadding>
                                         {myRestaurants.map((item, index) => (
                                                 <NavLink to={`/myrestaurant/${item.res_name}`} key={index} style={{ textDecoration: 'none', color: 'unset' }}>
-                                                    <ListItem button className={classes.nested} key={item.res_id} selected={this.state.selectedIndex === `/myrestaurant/${item.res_name}`} onClick={event => this.handleListItemClick(event, `/myrestaurant/${item.res_name}`)}>
+                                                    <ListItem button className={classes.nested} key={item.res_id} selected={this.state.selectedIndex === `/myrestaurant/${item.res_name}`} onClick={event => this.handleListResItemClick(event, `/myrestaurant/${item.res_name}`)}>
                                                         <ListItemIcon style={{ color: (this.state.selectedIndex === `/myrestaurant/${item.res_name}` ? '#FFFFFF' : '') }}>
                                                             <StarBorder />
                                                         </ListItemIcon>
@@ -476,10 +491,11 @@ function mapStateToProps(state) {
 }
 
 
-export default injectIntl(connect(mapStateToProps, { 
+export default withRouter(injectIntl(connect(mapStateToProps, { 
     logout: actions.logout, 
     setLocale, 
     updateData: updateData, 
     updateRestaurantName: updateRestaurantName,
-    updateTriggerURL: updateTriggerURL
-})(withStyles(styles, { withTheme: true })(withRouter(Header))))
+    updateTriggerURL: updateTriggerURL,
+    updateTriggerComponent: updateTriggerComponent
+})(withStyles(styles, { withTheme: true })(Header))))
