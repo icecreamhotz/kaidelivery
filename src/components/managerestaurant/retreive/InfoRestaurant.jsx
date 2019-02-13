@@ -110,8 +110,11 @@ class InfoRestaurant extends Component {
         this.setState({
             loading: true
         })
-        const restaurant = await API.get(`restaurants/${resname}`)
+        const res_id = this.props.res_id
+        const restaurant = await API.get(`restaurants/${res_id}`)
         const { data } = await restaurant
+
+        alert(data.data)
         
         if(data.data.length === 0) {
             this.props.history.push('/myrestaurant')

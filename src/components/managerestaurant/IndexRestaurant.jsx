@@ -8,10 +8,12 @@ import Typography from '@material-ui/core/Typography';
 import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
 import red from '@material-ui/core/colors/red';
+import lightGreen from '@material-ui/core/colors/lightGreen';
 import Home from '@material-ui/icons/Home';
 import Edit from '@material-ui/icons/Edit';
 import DeleteForever from '@material-ui/icons/DeleteForever';
 import Divider from '@material-ui/core/Divider';
+import FastFood from '@material-ui/icons/Fastfood';
 import { connect } from 'react-redux'
 import { updateTriggerComponent, updateRestaurantName } from '../../actions/restaurant'
 import API from '../../helper/api'
@@ -20,6 +22,8 @@ import SweetAlert from 'sweetalert-react';
 
 import InfoRestaurant from './retreive/InfoRestaurant'
 import EditRestaurant from './edit/EditRestaurant'
+import CreateFoodComponent from './../managefoods/create/CreateFoodComponent'
+import InfoFoods from '../managefoods/retreive/InfoFoods'
 
 const styles = theme => ({
     paper: {
@@ -34,6 +38,9 @@ const styles = theme => ({
     },
     infoGrid: {
         height: 100
+    },
+    addGridIcon: {
+        backgroundColor: lightGreen['A400']
     },
     infoGridIcon: {
         backgroundColor: blue[400]
@@ -57,15 +64,43 @@ const styles = theme => ({
 
 class IndexRestaurant extends Component {
 
-    state = { component: 0, open: false, loading: false, type: 'info', text: 'Do you need delete ?', title: 'Warning', }
+    state = { res_id: '', component: 0, open: false, loading: false, type: 'info', text: 'Do you need delete ?', title: 'Warning', }
+
+    async componentDidMount() {
+        await this.fetchRestaurantID()
+    }
+
+    fetchRestaurantID = async () => {
+        const resname = decodeURI(this.props.match.params.resname)
+        console.log(resname)
+        const restaurants = await API.post(`restaurants/`, {res_name: resname})
+        const { data } = await restaurants
+        console.log(resname)
+        console.log('fetchresid')
+        console.log(data)
+        this.setState({
+            res_id: data.data.res_id
+        })
+    }
 
     changeValueComponent = (value) => {
         this.setState({ component: value })
     }
 
+    componentWillUpdate (nextProps, nextState) {
+        if(this.state.component !== nextState.component) {
+            this.fetchRestaurantID()
+        }
+    }
+
     componentWillReceiveProps (newProps) {
+        if(this.props.res_id !== newProps.res_id) {
+            console.log(newProps.res_id)
+        }
         if(newProps.resComponent) {
-            this.setState({ component: 0}, () => this.props.updateTriggerComponent(false))
+            this.setState({ component: 0}, () => {
+                this.props.updateTriggerComponent(false)
+            })
         }
     }
 
@@ -174,17 +209,59 @@ class IndexRestaurant extends Component {
                             </Grid>
                         </Grid>
                     </Grid>
+                    <Grid item container xs={12} className={classes.grid} alignItems="center">
+                        <Grid container direction="column">
+                            <Grid item xs={12}>
+                                <Typography variant="h3" gutterBottom>
+                                    Foods
+                                </Typography>
+                                <Typography variant="subtitle1" gutterBottom>
+                                    {`${decodeURI(this.props.match.params.resname)}`}
+                                </Typography>
+                            </Grid>
+                            <Divider style={{width: '100%'}}/>
+                            <Grid item container spacing={24} style={{marginTop: 15}}>
+                                <Grid item xs={12} sm className={classes.pointerHover} onClick={() => this.changeValueComponent(4)}>
+                                        <Paper className={classes.paper}>
+                                            <Grid item className={classes.infoGrid} container>
+                                                <Grid item className={classes.addGridIcon} container sm={4} alignItems="center" justify="center">
+                                                    <FastFood className={classes.largeIcon} />
+                                                </Grid>
+                                                <Grid item container sm alignItems="center" justify="center">
+                                                    Add foods
+                                                </Grid>
+                                            </Grid>
+                                        </Paper>
+                                </Grid>
+                                <Grid item xs={12} sm className={classes.pointerHover} onClick={() => this.changeValueComponent(3)}>
+                                    <Paper className={classes.paper}>
+                                        <Grid item className={classes.infoGrid} container>
+                                            <Grid item className={classes.infoGridIcon} container sm={4} alignItems="center" justify="center">
+                                                <Home className={classes.largeIcon} />
+                                            </Grid>
+                                            <Grid item container sm alignItems="center" justify="center">
+                                                Infomations
+                                            </Grid>
+                                        </Grid>
+                                    </Paper>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Grid>
                 </Grid>
                 }
-                {component === 1 && <InfoRestaurant />}
-                {component === 2 && <EditRestaurant changeValueComponent={this.changeValueComponent}/>}
-                {component === 3 && <InfoRestaurant />}
+                {component === 1 && <InfoRestaurant res_id={this.state.res_id}/>}
+                {component === 2 && <EditRestaurant changeValueComponent={this.changeValueComponent} res_id={this.state.res_id}/>}
+                {component === 3 && <InfoFoods changeValueComponent={this.changeValueComponent} res_id={this.state.res_id}/>}
+                {component === 4 && <CreateFoodComponent changeValueComponent={this.changeValueComponent} res_id={this.state.res_id}/>}
                 <SweetAlert
                     show={this.state.open}
                     title={this.state.title}
                     text={this.state.text}
                     type={this.state.type}
+                    showCancelButton
                     onConfirm={() => { if(this.state.open) this.sweetalert() }}
+                    onCancel={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
                     onEscapeKey={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
                     onOutsideClick={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
                 />
@@ -195,12 +272,15 @@ class IndexRestaurant extends Component {
 
 function mapStateToProps(state) {
     return {
-        resComponent: state.update.resComponent
+        resComponent: state.update.resComponent,
     }
 }
 
 IndexRestaurant.propTypes = {
   classes: PropTypes.object.isRequired,
+  updateRestaurantName: PropTypes.func.isRequired
 };
 
-export default withRouter(connect(mapStateToProps, {updateTriggerComponent: updateTriggerComponent, updateRestaurantName: updateRestaurantName})(withStyles(styles, {withTheme: true})(IndexRestaurant)));
+export default withRouter(connect(mapStateToProps, {
+    updateTriggerComponent: updateTriggerComponent, 
+    updateRestaurantName: updateRestaurantName})(withStyles(styles, {withTheme: true})(IndexRestaurant)));

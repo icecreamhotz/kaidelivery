@@ -101,7 +101,7 @@ class TwoStepInput extends Component {
     constructor(props) {
         super(props);
          this.state = { 
-            res_name: '',
+            res_name: props.resName,
             res_email: '',
             res_tel: {
                 res_tel1: '', 
@@ -116,10 +116,8 @@ class TwoStepInput extends Component {
             res_details: '',
             res_address: '',
             loading: true, 
-            open: false, 
-            type: 'info',
-            text: 'Do you need insert ?',
-            title: 'Warning',
+            successAlert: false,
+            confirmAlert: false, 
             res_open: new Date(),
             res_close: new Date(),
             res_holiday: [],
@@ -133,6 +131,7 @@ class TwoStepInput extends Component {
             inputLoading: false,
             searchValue: ''
         };
+        this.onChangeValue = this.onChangeValue.bind(this)
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -178,19 +177,13 @@ class TwoStepInput extends Component {
         if (this.state.res_typesValue.length !== nextState.res_typesValue.length) {
             return true
         }
-        if (this.state.open !== nextState.open) {
+        if (this.state.confirmAlert !== nextState.confirmAlert) {
+            return true
+        }
+        if (this.state.successAlert !== nextState.successAlert) {
             return true
         }
         if (this.state.loading !== nextState.loading) {
-            return true
-        }
-        if (this.state.type !== nextState.type) {
-            return true
-        }
-        if (this.state.title !== nextState.title) {
-            return true
-        }
-        if (this.state.text !== nextState.text) {
             return true
         }
         if (this.props.resName !== nextProps.resName) {
@@ -227,8 +220,6 @@ class TwoStepInput extends Component {
 
     async componentDidMount() {
         this.mounted = true;
-
-        await this.fetchRestaurantTypes()
         
         ValidatorForm.addValidationRule('openTime', (value) => {
             if(moment(value).format('h:mma') === moment(this.state.res_close).format('h:mma')) {
@@ -265,8 +256,8 @@ class TwoStepInput extends Component {
             return true
         })
         
-        this.onChangeValue = this.onChangeValue.bind(this)
-        this.getGeoLocation()
+        await this.fetchRestaurantTypes()
+        await this.getGeoLocation()
     }
 
     componentWillUnmount() {
@@ -414,15 +405,9 @@ class TwoStepInput extends Component {
         })
     }
 
-    setLatLngValue = (position) => {
-        console.log(position)
-        const pos = [position.lat, position.lng]
-        this.setState({ res_position: pos})
-    }
-
     onSubmit = async () => {
         this.setState({
-            open: false,
+            confirmAlert: false,
             loading: true
         }, async () => {
             const { center, res_name, res_email, res_tel, my_tel, res_details, res_address, res_open, res_close, res_holiday, res_typesValue } = this.state
@@ -448,43 +433,29 @@ class TwoStepInput extends Component {
             }
 
             await API.post(`restaurants/update/${this.state.res_name}`, restaurantData).then(() => {
-                this.setState({
-                    loading: false,
-                }, () => {
-                    setTimeout(() => {
-                        this.setState({
-                            type: 'success',
-                            text: 'Inserted successful',
-                            title: 'Success',
-                            open: true
-                        })
-                    }, 100);
-                })
+                setTimeout(() => {
+                    this.setState({
+                        loading: false,
+                        successAlert: true
+                    })
+                }, 100);
             }) 
         })
     }
 
-    sweetalert = () => {
-        const { type } = this.state
-        if(type === 'success') {
-            this.setState({
-                open: false
-            }, () => {
-                setTimeout(() => {
-                    this.props.handleNext()
-                }, 100);
-            })
-        } 
-        if (type === 'info' ){
-            this.onSubmit()
-        }
+    afterSubmit = () => {
+        this.setState({
+            successAlert: false
+        }, () => {
+            this.props.handleNext()
+        })
     }
 
     handleSubmit = (e) => {
         e.preventDefault()
 
         this.setState({
-            open: true
+            confirmAlert: true
         }) 
     }
 
@@ -1060,8 +1031,6 @@ class TwoStepInput extends Component {
                                         <Email className={"ic-color"}/>
                                     </Grid>
                                     <Grid item xs>
-                                        {/* <GoogleMaps key="map" onClickCurrentLocation={this.getGeoLocation} showed={true} lat={null} lng={null} setPosition={this.setLatLngValue}/> */}
-                                      
                                         {
                                             isScriptLoadSucceed &&
                                             <div data-standalone-searchbox="">
@@ -1139,13 +1108,24 @@ class TwoStepInput extends Component {
                     </Paper>
                 </ValidatorForm>
                 <SweetAlert
-                    show={this.state.open}
-                    title={this.state.title}
-                    text={this.state.text}
-                    type={this.state.type}
-                    onConfirm={() => { if(this.state.open) this.sweetalert() }}
-                    onEscapeKey={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
-                    onOutsideClick={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
+                    show={this.state.confirmAlert}
+                    title="Warning"
+                    text="Do you need to insert ?"
+                    type="warning"
+                    showCancelButton
+                    onConfirm={() => { this.onSubmit() }}
+                    onCancel={() => { this.setState({confirmAlert: false})  }}
+                    onEscapeKey={() => { this.setState({confirmAlert: false}) }}
+                    onOutsideClick={() => {if(this.state.confirmAlert) { this.setState({confirmAlert: false}) }}}
+                />
+                <SweetAlert
+                    show={this.state.successAlert}
+                    title="Success"
+                    text="Inserted successful"
+                    type="success"
+                    onConfirm={() => { this.afterSubmit() }}
+                    onEscapeKey={() => {if(this.state.successAlert) { this.setState({successAlert: false}) }}}
+                    onOutsideClick={() => {if(this.state.successAlert) { this.setState({successAlert: false}) }}}
                 />
             </div>
         );
@@ -1156,4 +1136,4 @@ TwoStepInput.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default scriptLoader('https://maps.googleapis.com/maps/api/js?key=AIzaSyDCkgDceoiSbeWa29pNeJxmsNipUF7P3uw&v=3.exp&libraries=geometry,drawing,places')(withStyles(styles)(withRules(TwoStepInput)));
+export default withStyles(styles)(withRules(scriptLoader('https://maps.googleapis.com/maps/api/js?key=AIzaSyDCkgDceoiSbeWa29pNeJxmsNipUF7P3uw&v=3.exp&libraries=geometry,drawing,places')(TwoStepInput)));

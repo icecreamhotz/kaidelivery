@@ -78,6 +78,7 @@ class Info extends Component {
         showsuccess: false,
         anchorEl: null,
         updated: false,
+        showerremail: false,
     }
 
     async componentDidMount() {
@@ -175,11 +176,16 @@ class Info extends Component {
 
     submitUpdate = async (e) => {
         e.preventDefault()
+
         this.setState({
             loadingDB: true
         })
 
         if(this.state.erremail) {
+            this.setState({
+                loadingDB: false,
+                showerremail: true
+            })
             return
         }
 
@@ -441,9 +447,18 @@ class Info extends Component {
                     title="Succuess"
                     text="Updated data success."
                     type="success"
-                    onConfirm={() => this.setState({ showsuccess: false })}
-                    onEscapeKey={() => this.setState({ showsuccess: false })}
-                    onOutsideClick={() => this.setState({ showsuccess: false })}
+                    onConfirm={() => { if(this.state.showsuccess) { this.setState({ showsuccess: false } ) }}}
+                    onEscapeKey={() => { if(this.state.showsuccess) { this.setState({ showsuccess: false } ) }}}
+                    onOutsideClick={() => { if(this.state.showsuccess) { this.setState({ showsuccess: false } ) }}}
+                />
+                <SweetAlert
+                    show={this.state.showerremail}
+                    title="Error"
+                    text="Email is exists."
+                    type="error"
+                    onConfirm={() => { if(this.state.showerremail) { this.setState({ showerremail: false } ) }}}
+                    onEscapeKey={() => { if(this.state.showerremail) { this.setState({ showerremail: false } ) }}}
+                    onOutsideClick={() => { if(this.state.showerremail) { this.setState({ showerremail: false } ) }}}
                 />
             </div>
         )

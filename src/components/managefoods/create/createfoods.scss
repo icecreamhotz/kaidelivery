@@ -1,0 +1,214 @@
+.avatar-wrapper {
+    position: relative;
+    height: 56px;
+    width: 56px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 1px 1px 15px -5px black;
+    transition: all .3s ease;
+  }
+  .avatar-wrapper:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+  }
+  .avatar-wrapper:hover .food-pic {
+    opacity: .5;
+  }
+  .avatar-wrapper .food-pic {
+    height: 100%;
+    width: 100%;
+    transition: all .3s ease;
+  }
+  .avatar-wrapper .food-pic:after {
+    font-family: FontAwesome;
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    font-size: 190px;
+    background: #ecf0f1;
+    color: #34495e;
+    text-align: center;
+  }
+  .avatar-wrapper .upload-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+  }
+  .avatar-wrapper .upload-button .fa-plus {
+    position: absolute;
+    font-size: 35px;
+    top: 10px;
+    left: 12px;
+    text-align: center;
+    opacity: 0;
+    transition: all .3s ease;
+    color: #34495e;
+  }
+  .avatar-wrapper .upload-button:hover .fa-plus {
+    opacity: .9;
+  }
+
+  .circCont {
+    position: absolute;
+    top: -20px;
+    right: -5px;
+    animation: zoomIn 0.3s;
+  }
+
+  .circle-food {
+    width: 26px;
+    height: 26px;
+    background: transparent;
+    border-color: transparent;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    margin: 10px 20px;
+    transition: transform 0.2s;
+  }
+
+  .redo {
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .circle-food:hover, .redo:hover {
+    transform: scale(1.1);
+  }
+
+  .circle-food:after {
+    width: 20px;
+    height: 4px;
+    background-color: #E91E63;
+    content: "";
+    left: 75%;
+    top: 50%;
+    margin-left: -12px;
+    margin-top: -2px;
+    position: absolute;
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+  }
+  .circle-food:before {
+    left: 75%;
+    top: 50%;
+    margin-left: -12px;
+    margin-top: -2px;
+    width: 20px;
+    height: 4px;
+    background-color: #E91E63;
+    content: "";
+    position: absolute;
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+  }
+
+  .circle-loader {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-left-color: #5cb85c;
+    animation: loader-spin 1.2s infinite linear, zoomIn 0.3s;
+    position: relative;
+    margin: auto;
+    vertical-align: middle;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+  }
+  
+  .load-complete {
+    -webkit-animation: none;
+    animation: none;
+    border-color: #5cb85c;
+    transition: border 500ms ease-out;
+  }
+  
+  .checkmark {
+    display: none;
+  }
+  .checkmark.draw:after {
+    animation: checkmark 800ms ease , zoomIn 0.5s;
+    transform: scaleX(-1) rotate(135deg);
+  }
+  .checkmark:after {
+    opacity: 1;
+    height: 25px;
+    width: 15px;
+    transform-origin: left top;
+    border-right: 3px solid #5cb85c;
+    border-top: 3px solid #5cb85c;
+    content: '';
+    left: 15px;
+    top: 25px;
+    position: absolute;
+  }
+  
+  @keyframes loader-spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes checkmark {
+    0% {
+      height: 0;
+      width: 0;
+      opacity: 1;
+    }
+    20% {
+      height: 0;
+      width: 15px;
+      opacity: 1;
+    }
+    40% {
+      height: 25px;
+      width: 15px;
+      opacity: 1;
+    }
+    100% {
+      height: 25px;
+      width: 15px;
+      opacity: 1;
+    }
+  }
+  
+  @-webkit-keyframes zoomIn {
+    from {
+      opacity: 0;
+      -webkit-transform: scale3d(0.3, 0.3, 0.3);
+      transform: scale3d(0.3, 0.3, 0.3);
+    }
+  
+    50% {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      -webkit-transform: scale3d(0.3, 0.3, 0.3);
+      transform: scale3d(0.3, 0.3, 0.3);
+    }
+  
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .zoomIn {
+    animation: zoomIn 0.3s;
+  }
+  

@@ -257,7 +257,7 @@ class Header extends Component {
         if(nextProps.resStatus) {
             this.setState({
                 loadingRes: true
-            })
+        })
             await this.fetchRestaurantUser()
             await this.props.updateRestaurantName(false)
         }
@@ -284,9 +284,8 @@ class Header extends Component {
         this.setState({ selectedIndex: index})
     }
     
-    handleListResItemClick = (event, index) => {
+    handleListResItemClick = (event, res_id, index) => {
         this.props.updateTriggerComponent(true)
-
         this.setState({ selectedIndex: index})
     }
 
@@ -428,7 +427,7 @@ class Header extends Component {
                                         <List component="div" disablePadding>
                                         {myRestaurants.map((item, index) => (
                                                 <NavLink to={`/myrestaurant/${item.res_name}`} key={index} style={{ textDecoration: 'none', color: 'unset' }}>
-                                                    <ListItem button className={classes.nested} key={item.res_id} selected={this.state.selectedIndex === `/myrestaurant/${item.res_name}`} onClick={event => this.handleListResItemClick(event, `/myrestaurant/${item.res_name}`)}>
+                                                    <ListItem button className={classes.nested} key={item.res_id} selected={this.state.selectedIndex === `/myrestaurant/${item.res_name}`} onClick={event => this.handleListResItemClick(event, item.res_id, `/myrestaurant/${item.res_name}`)}>
                                                         <ListItemIcon style={{ color: (this.state.selectedIndex === `/myrestaurant/${item.res_name}` ? '#FFFFFF' : '') }}>
                                                             <StarBorder />
                                                         </ListItemIcon>
@@ -497,5 +496,5 @@ export default withRouter(injectIntl(connect(mapStateToProps, {
     updateData: updateData, 
     updateRestaurantName: updateRestaurantName,
     updateTriggerURL: updateTriggerURL,
-    updateTriggerComponent: updateTriggerComponent
+    updateTriggerComponent: updateTriggerComponent,
 })(withStyles(styles, { withTheme: true })(Header))))

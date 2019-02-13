@@ -1,13 +1,11 @@
-import {
-    combineReducers
-} from 'redux'
+import { combineReducers } from "redux";
 
-import user from './reducers/user'
-import locale from './reducers/locale'
-import update from './reducers/update'
+import user from "./reducers/user";
+import locale from "./reducers/locale";
+import update from "./reducers/update";
 
 export default combineReducers({
-    user,
-    locale,
-    update
-})
+  user,
+  locale,
+  update
+});

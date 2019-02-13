@@ -33,10 +33,6 @@ class CreateRestaurant extends Component {
         loading: false
     };
 
-    componentDidMount() {
-        this.forceUpdate()
-    }
-
     handleNext = () => {
         this.setState(state => ({
         activeStep: state.activeStep + 1,

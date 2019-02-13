@@ -37,8 +37,8 @@ class OneStepInput extends Component {
             fileimg: null, 
             preview: '', 
             altimg: '', 
-            loading: false, 
-            askopen: false,
+            confirmAlert: false, 
+            successAlert: false,
             open: false, 
             text: '',
         };
@@ -65,57 +65,51 @@ class OneStepInput extends Component {
         reader.readAsDataURL(file)
     }
 
-    saveData = async () => {
+    saveData = () => {
         this.setState({
-            askopen: false,
+            confirmAlert: false,
             loading: true
         }, async () => {
-            let bodyFormData = new FormData()
-            bodyFormData.set('res_name', this.state.res_name)
-            bodyFormData.append('image', this.state.fileimg)
-
-            await API.post('/restaurants/create', bodyFormData, {
-                headers: {
-                    'content-type': 'multipart/form-data'
-                }
-            })
-            .then(() => {
-                this.setState({
-                    loading: false
-                }, () => {
+            if(!this.state.confirmAlert) {
+                let bodyFormData = new FormData()
+                bodyFormData.set('res_name', this.state.res_name)
+                bodyFormData.append('image', this.state.fileimg)
+    
+                await API.post('restaurants/create', bodyFormData, {
+                    headers: {
+                        'content-type': 'multipart/form-data'
+                    }
+                })
+                .then((rest) => {
+                    console.log('mean')
+                    console.log(rest)
                     setTimeout(() => {
                         this.setState({
-                            open: true,
-                            content: `${this.state.res_name} is available now !!`
+                            loading: false,
+                            successAlert: true
                         })
-                    }, 100); 
+                    }, 100);
                 })
-            })
-            .catch(err => console.log(err))
+                .catch(err => console.log(err))
+            }
+      
         })
     }
 
-    closeAlert = () => {
-        if(this.state.open) {
-            this.setState({
-                open: false,
-                content: ``,
-                title: '',
-                type: '',
-            }, () => {
-                setTimeout(() => {
-                    this.props.updateRestaurantName(true)
-                    this.props.handleNext()
-                    this.props.setResName(this.state.res_name)
-                }, 100);
-            })
-        }
+    afterSubmit = () => {
+        this.setState({
+            successAlert: false
+        }, () => {
+            this.props.updateRestaurantName(true)
+            this.props.setResName(this.state.res_name)
+            this.props.handleNext()
+        })
     }
 
     submit = (e) => {
         e.preventDefault()
 
-        this.setState({askopen: true})
+        this.setState({confirmAlert: true})
     }
 
     render() {
@@ -175,22 +169,24 @@ class OneStepInput extends Component {
                 </Grid>
                 </ValidatorForm>
                 <SweetAlert
-                    show={this.state.askopen}
-                    title="Are you sure ?"
-                    text={`You want to use ${this.state.res_name} to the restaurant name right ?`}
-                    type="info"
-                    onConfirm={() => this.saveData()}
-                    onEscapeKey={() => this.setState({askopen: !this.state.askopen})}
-                    onOutsideClick={() => { if(this.state.askopen) this.setState({askopen: !this.state.askopen}) }}
+                    show={this.state.confirmAlert}
+                    title="Warning"
+                    text="Do you need to insert ?"
+                    type="warning"
+                    showCancelButton
+                    onConfirm={() => { this.saveData() }}
+                    onCancel={() => { this.setState({confirmAlert: false})  }}
+                    onEscapeKey={() => { this.setState({confirmAlert: false}) }}
+                    onOutsideClick={() => {if(this.state.confirmAlert) { this.setState({confirmAlert: false}) }}}
                 />
                 <SweetAlert
-                    show={this.state.open}
+                    show={this.state.successAlert}
                     title="Success"
-                    text={this.state.content}
+                    text="Insert successful"
                     type="success"
-                    onConfirm={() => { if(this.state.open) this.closeAlert() }}
-                    onEscapeKey={() => { if(this.state.open) this.closeAlert() }}
-                    onOutsideClick={() => { if(this.state.open) this.closeAlert() }}
+                    onConfirm={() => { this.afterSubmit() }}
+                    onEscapeKey={() => {if(this.state.successAlert) { this.setState({successAlert: false}) }}}
+                    onOutsideClick={() => {if(this.state.successAlert) { this.setState({successAlert: false}) }}}
                 />
             </div>
         );

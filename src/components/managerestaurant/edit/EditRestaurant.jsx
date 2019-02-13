@@ -22,14 +22,15 @@ import { Color } from '../../../variable/Color';
 import withRules from '../../validations/validate'
 import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
 import { MuiPickersUtilsProvider } from 'material-ui-pickers'
-import GoogleMaps from '../create/GoogleMaps'
+import LocationSearching from '@material-ui/icons/LocationSearching';
 import MomentUtils from '@date-io/moment';
 import red from '@material-ui/core/colors/red';
 import green from '@material-ui/core/colors/green';
 import SweetAlert from 'sweetalert-react';
 import { withGoogleMap, GoogleMap, Marker } from "react-google-maps";
 import scriptLoader from 'react-async-script-loader';
-
+import { updateRestaurantName } from '../../../actions/restaurant'
+import { connect } from 'react-redux'
 // set locale th
 moment.locale('th')
 
@@ -135,20 +136,25 @@ class EditRestaurant extends Component {
             res_details: '',
             res_address: '',
             loading: true, 
-            open: false, 
-            type: 'info',
-            text: 'Do you need insert ?',
-            title: 'Warning',
+            confirmAlert: false,
+            successAlert: false,
             res_open: new Date(),
             res_close: new Date(),
             res_holiday: [],
             res_types: [],
             res_typesValue: [],
-            res_position: [],
             fileimg: null, 
             preview: '', 
             altimg: '',
+            center: {
+                lat: 0, lng: 0, errorLatLng: true
+            },
+            loadingMap: false,
+            bounds: null,
+            inputLoading: false,
+            searchValue: ''
         };
+        this.onChangeValue = this.onChangeValue.bind(this)
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -197,19 +203,13 @@ class EditRestaurant extends Component {
         if (this.state.res_typesValue.length !== nextState.res_typesValue.length) {
             return true
         }
-        if (this.state.open !== nextState.open) {
+        if (this.state.confirmAlert !== nextState.confirmAlert) {
+            return true
+        }
+        if (this.state.successAlert !== nextState.successAlert) {
             return true
         }
         if (this.state.loading !== nextState.loading) {
-            return true
-        }
-        if (this.state.type !== nextState.type) {
-            return true
-        }
-        if (this.state.title !== nextState.title) {
-            return true
-        }
-        if (this.state.text !== nextState.text) {
             return true
         }
         if (this.state.fileimg !== nextState.fileimg) {
@@ -221,13 +221,33 @@ class EditRestaurant extends Component {
         if (this.state.altimg !== nextState.altimg) {
             return true
         }
+        if (this.state.center.lat !== nextState.center.lat) {
+            return true
+        }
+        if (this.state.center.lng !== nextState.center.lng) {
+            return true
+        }
+        if (this.state.center.errorLatLng !== nextState.center.errorLatLng) {
+            return true
+        }
+        if (this.state.loadingMap !== nextState.loadingMap) {
+            return true
+        }
+        if (this.state.inputLoading !== nextState.inputLoading) {
+            return true
+        }
+        if (this.state.searchValue !== nextState.searchValue) {
+            return true
+        }
         return false
     }
 
     async componentDidMount() {
+        this.mounted = true;
+
         await this.fetchRestaurantTypes()
         await this.fetchRestaurantData()
-        
+
         ValidatorForm.addValidationRule('openTime', (value) => {
             if(moment(value).format('h:mma') === moment(this.state.res_close).format('h:mma')) {
                 return false
@@ -262,8 +282,11 @@ class EditRestaurant extends Component {
             }
             return true
         })
-        
-        this.onChangeValue = this.onChangeValue.bind(this)
+    
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     checkMyTelLength = (value) => {
@@ -279,10 +302,34 @@ class EditRestaurant extends Component {
         return false
     }
 
+    setGeoLocation = (lat, lng) => {
+        if(navigator.geolocation) {
+            this.setState(prevState => ({
+                center: {
+                    ...prevState.center,
+                    errorLatLng: false
+                }   
+                }), () => {
+                    if(this.isSearch) { this.onClickGetLocation() }
+                    else { 
+                      this.setState(prevState => ({ isSearch: true })) 
+                      this.setValueToPlaceSearch(lat, lng)
+                    }
+                })
+        } else {
+            this.setState(prevState => ({
+                center: {
+                    ...prevState.center,
+                    errorLatLng: true
+                }
+            }))
+        }
+    }
+
     fetchRestaurantData = async () => {
 
-        const resname = this.props.match.params.resname
-        const restaurantvalue = await API.get(`restaurants/${resname}`)
+        const res_id =  this.props.res_id
+        const restaurantvalue = await API.get(`restaurants/${res_id}`)
         const { data } = await restaurantvalue
         const restaurant = data.data
 
@@ -296,10 +343,10 @@ class EditRestaurant extends Component {
                 }) 
             }).map(item => { return {value: item.restype_id, label: item.restype_name } })
 
-            const getlat = (restaurant.res_lat !== null ? restaurant.res_lat : 0)
-            const getlng = (restaurant.res_lng !== null ? restaurant.res_lng : 0)
+            const getlat = parseFloat((restaurant.res_lat !== null ? restaurant.res_lat : 0))
+            const getlng = parseFloat((restaurant.res_lng !== null ? restaurant.res_lng : 0))
             
-            this.setState({
+            this.setState(prevState => ({
                 old_resname: restaurant.res_name,
                 res_logo: restaurant.res_logo,
                 res_name: restaurant.res_name,
@@ -310,10 +357,15 @@ class EditRestaurant extends Component {
                 res_close: new Date(`December 17, 1997 ${restaurant.res_close}`),
                 res_holiday: restaurant.res_holiday,
                 res_typesValue: new_resTypes,
-                res_position: [getlat , getlng],
-                loading: false
-            }, () => {
+                loading: false,
+                center: {
+                    ...prevState.center,
+                    lat: getlat,
+                    lng: getlng,
+                }
+            }), () => {
                 this.setTelephone(restaurant.res_telephone)
+                this.setGeoLocation(getlat, getlng)
             })
         }
     }
@@ -463,19 +515,15 @@ class EditRestaurant extends Component {
         }, () => console.log(this.state.res_typesValue))
     }
 
-    setLatLngValue = (position) => {
-        const pos = [position.lat, position.lng]
-        this.setState({ res_position: pos})
-    }
-
     onSubmit = async () => {
         this.setState({
-            open: false,
+            confirmAlert: false,
             loading: true
         }, async () => {
             
-            const { old_resname, res_name, res_email, res_tel, my_tel, res_details, res_address, res_open, res_close, res_holiday, res_typesValue, res_position, fileimg } = this.state
+            const { center, old_resname, res_name, res_email, res_tel, my_tel, res_details, res_address, res_open, res_close, res_holiday, res_typesValue, fileimg } = this.state
 
+            console.log(center)
             const resTelephone = res_tel.res_tel1 + res_tel.res_tel2 + res_tel.res_tel3
             const myTelephone = (my_tel.my_tel1.length > 0 ? my_tel.my_tel1 + my_tel.my_tel2 + my_tel.my_tel3 : '')
 
@@ -492,8 +540,8 @@ class EditRestaurant extends Component {
             bodyFormData.set('res_close', moment(res_close).format('HH:mm'))
             bodyFormData.set('res_holiday', (res_holiday.length > 0 ? JSON.stringify(res_holiday) : null))
             bodyFormData.set('res_typesValue', (restypesValue.length > 0 ? JSON.stringify(restypesValue) : null))
-            bodyFormData.set('res_lat', res_position[0])
-            bodyFormData.set('res_lng', res_position[1])
+            bodyFormData.set('res_lat', center.lat)
+            bodyFormData.set('res_lng', center.lng)
             bodyFormData.append('image', fileimg)
 
             await API.post(`/restaurants/update/${old_resname}`, bodyFormData, {
@@ -502,37 +550,15 @@ class EditRestaurant extends Component {
                 }
             })
             .then((res) => {
-                this.setState({
-                    loading: false,
-                }, () => {
-                    setTimeout(() => {
-                        this.setState({
-                            type: 'success',
-                            text: 'Updated successful',
-                            title: 'Success',
-                            open: true
-                        })
-                    }, 100);
-                })
+                setTimeout(() => {
+                    this.setState({
+                        loading: false,
+                        successAlert: true
+                    })
+                }, 100);
             })
             .catch(err => console.log(err))
         })
-    }
-
-    sweetalert = () => {
-        const { type } = this.state
-        if(type === 'success') {
-            this.setState({
-                open: false
-            }, () => {
-                setTimeout(() => {
-                    this.props.changeValueComponent(1)
-                }, 100);
-            })
-        } 
-        if (type === 'info' ){
-            this.onSubmit()
-        }
     }
 
     redoImage = () => {
@@ -560,14 +586,162 @@ class EditRestaurant extends Component {
 
     handleSubmit = (e) => {
         e.preventDefault()
-
         this.setState({
-            open: true
+            confirmAlert: true
         }) 
     }
 
+    onMapMounted = map => {
+        this._map = map
+    }
+
+    onBoundsChanged = () => _.debounce(
+        () => {
+            if (this.mounted) {
+                this.setState(prevState => ({
+                    bounds: this._map.getBounds(),
+                        center: {
+                            ...prevState.center,
+                            lat: parseFloat(this._map.getCenter().lat()),
+                            lng: parseFloat(this._map.getCenter().lng())
+                        } 
+                    }))
+                let {
+                    onBoundsChange
+                } = this.props
+                    if(onBoundsChange) {
+                        onBoundsChange(this._map)
+                    }
+                }
+            },
+            100, {
+                maxWait: 300
+            }
+    )
+
+    onSearchBoxMounted = searchBox => {
+        this._searchBox = searchBox;
+    }
+
+    onPlacesChanged = () => {
+        const places = this._searchBox.getPlaces();
+        console.log('lat' +places[0].geometry.location.lat())
+        console.log('lng' +places[0].geometry.location.lng())
+        if(places[0]) {
+            const nameRestaurant = `${places[0].name} ${places[0].formatted_address}`
+            this.setState(prevState => ({
+                    center: {
+                        ...prevState.center,
+                        lat: parseFloat(places[0].geometry.location.lat()),
+                        lng: parseFloat(places[0].geometry.location.lng())
+                },
+                searchValue: nameRestaurant
+            }))
+        }
+    }
+
+    onMapClick = (e) => {
+        this.setState({loadingMap: true})
+        this.setState(prevState => ({
+            center: {
+                ...prevState.center,
+                lat: parseFloat(e.latLng.lat()),
+                lng: parseFloat(e.latLng.lng()),
+            } 
+        }), () => this.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng))
+    }
+        
+    onClickGetLocation = () => { 
+            this.setState({loading: true})
+            const {lat, lng} = this.state.center;
+
+            const bounds = new window.google.maps.LatLngBounds();
+            const latlng = new window.google.maps.LatLng(lat + 0.001 , lng + 0.001);
+            const latlng2 = new window.google.maps.LatLng(lat - 0.001 , lng - 0.001);
+            bounds.extend(latlng);
+            bounds.extend(latlng2);
+
+            this._map.fitBounds(bounds);
+            this.setValueToPlaceSearch(lat, lng);
+    }
+
+    onDragMap = () => {
+          this.setState(prevState => ({
+              center: {
+                ...prevState.center,
+                lat: parseFloat(this._map.getCenter().lat()),
+                lng: parseFloat(this._map.getCenter().lng())
+              },
+          }), () => this.setValueToPlaceSearch(this.state.center.lat, this.state.center.lng))
+    }
+        
+    setValueToPlaceSearch = (lat, lng) => {
+            if(!this.state.loading || !this.state.inputLoading || this.state.searchValue !== '') {
+                this.setState({loadingMap: true, inputLoading: true, searchValue: ''})
+            }
+            console.log(lat)
+            try {
+                const geocoder = new window.google.maps.Geocoder()
+                const latlng = {lat: lat, lng: lng}
+                
+                geocoder.geocode({'location': latlng}, (results, status) => {
+                    if(status === window.google.maps.GeocoderStatus.OK) {
+                    if(results[1]) {
+                        const request = {
+                            location: latlng,
+                            radius: 10,
+                            type : ["restaurant"]
+                        }
+                        if(this._map) {
+                        const service = new window.google.maps.places.PlacesService(this._map.context.__SECRET_MAP_DO_NOT_USE_OR_YOU_WILL_BE_FIRED);
+                        service.nearbySearch(request, (place, status) => {
+                            if(status === window.google.maps.places.PlacesServiceStatus.OK) {
+                            const myRestaurant = `${place[0].name} ${place[0].vicinity}`
+                            this.setState({
+                                searchValue: myRestaurant,
+                                loadingMap: false,
+                                inputLoading: false,
+                            });
+                            } else {
+                            this.setState({
+                                searchValue: results[1].formatted_address,
+                                loadingMap: false,
+                                inputLoading: false,
+                            });
+                            }
+                        });
+                        }
+                    }
+                    } else {
+                    this.setState({
+                        loadingMap: false,
+                        inputLoading: false,
+                    });
+                    }
+                });
+            } catch(e) {
+                this.forceUpdate();
+            }
+    }
+
+    onChangeSearchBox = (e) => {
+        this.setState({
+            searchValue : e.target.value
+        })
+    }
+
+    afterSubmit = () => {
+        this.setState({
+            successAlert: false
+        }, () => {
+            this.props.changeValueComponent(1)
+            this.props.updateRestaurantName(true)
+            this.props.history.push(`/myrestaurant/${this.state.res_name}`)
+        })
+    }
+
     render() {
-        const { classes } = this.props;
+        const { classes, isScriptLoadSucceed } = this.props;
         const { res_logo, preview, altimg } = this.state
         const getImage = `http://localhost:3000/restaurants/${(res_logo ? res_logo : 'noimg.png')}`
         const showImage = (preview !== '' ? preview : getImage)
@@ -623,7 +797,7 @@ class EditRestaurant extends Component {
                                         <TextValidator 
                                             name="res_name" 
                                             label="Restaurant Name" 
-                                            value={this.state.res_name} 
+                                            value={this.state.res_name || ''} 
                                             onChange={this.onChangeValue('res_name')} 
                                             validators={['required']}
                                             errorMessages={['this field is required']}
@@ -641,7 +815,7 @@ class EditRestaurant extends Component {
                                         <TextValidator 
                                             name="res_email" 
                                             label="Email" 
-                                            value={this.state.res_email} 
+                                            value={this.state.res_email || ''} 
                                             onChange={this.onChangeValue('res_email')} 
                                             validators={['required', 'isEmail']}
                                             errorMessages={['this field is required', 'email is invalid']}
@@ -668,7 +842,7 @@ class EditRestaurant extends Component {
                                                         <Grid item xs={12} md={3}>
                                                             <TextValidator
                                                                 name="res_tel1"
-                                                                value={this.state.res_tel.res_tel1}
+                                                                value={this.state.res_tel.res_tel1 || ''}
                                                                 InputProps={{
                                                                     classes: {
                                                                         root: classes.cssOutlinedInput,
@@ -693,7 +867,7 @@ class EditRestaurant extends Component {
                                                         <Grid item xs={12} md={3}>
                                                             <TextValidator
                                                                 name="res_tel2"
-                                                                value={this.state.res_tel.res_tel2}
+                                                                value={this.state.res_tel.res_tel2 || ''}
                                                                 InputProps={{
                                                                     classes: {
                                                                         root: classes.cssOutlinedInput,
@@ -715,7 +889,7 @@ class EditRestaurant extends Component {
                                                         <Grid item xs={12} md={4}>
                                                             <TextValidator
                                                                 name="res_tel3"
-                                                                value={this.state.res_tel.res_tel3}
+                                                                value={this.state.res_tel.res_tel3 || ''}
                                                                 InputProps={{
                                                                     classes: {
                                                                         root: classes.cssOutlinedInput,
@@ -755,7 +929,7 @@ class EditRestaurant extends Component {
                                                              <TextValidator
                                                                 ref="mySlotOne"
                                                                 name="my_tel1"
-                                                                value={this.state.my_tel.my_tel1}
+                                                                value={this.state.my_tel.my_tel1 || ''}
                                                                 InputProps={{
                                                                     classes: {
                                                                         root: classes.cssOutlinedInput,
@@ -781,7 +955,7 @@ class EditRestaurant extends Component {
                                                              <TextValidator
                                                                 ref="mySlotTwo"
                                                                 name="my_tel2"
-                                                                value={this.state.my_tel.my_tel2}
+                                                                value={this.state.my_tel.my_tel2 || ''}
                                                                 InputProps={{
                                                                     classes: {
                                                                         root: classes.cssOutlinedInput,
@@ -805,7 +979,7 @@ class EditRestaurant extends Component {
                                                              <TextValidator
                                                                 ref="mySlotThree"
                                                                 name="my_tel3"
-                                                                value={this.state.my_tel.my_tel3}
+                                                                value={this.state.my_tel.my_tel3 || ''}
                                                                 InputProps={{
                                                                     classes: {
                                                                         root: classes.cssOutlinedInput,
@@ -838,7 +1012,7 @@ class EditRestaurant extends Component {
                                         <TextValidator 
                                             name="res_details" 
                                             label="Details" 
-                                            value={this.state.res_details} 
+                                            value={this.state.res_details || ''} 
                                             onChange={this.onChangeValue('res_details')} 
                                             validators={['required']}
                                             errorMessages={['this field is required']}
@@ -856,7 +1030,7 @@ class EditRestaurant extends Component {
                                         <TextValidator 
                                             name="res_address" 
                                             label="Address" 
-                                            value={this.state.res_address} 
+                                            value={this.state.res_address || ''} 
                                             multiline
                                             rows="3"
                                             onChange={this.onChangeValue('res_address')} 
@@ -879,7 +1053,7 @@ class EditRestaurant extends Component {
                                         </Grid>
                                     <Grid item xs>
                                         <AutocompleteResTypes 
-                                            resTypes={this.state.res_types} 
+                                            resTypes={this.state.res_types || ''} 
                                             setResTypesValueFromChild={this.setResTypesValueFromChild} 
                                             loading={this.state.loading}
                                             data={this.state.res_typesValue}
@@ -901,7 +1075,7 @@ class EditRestaurant extends Component {
                                         <Grid item xs={3} md={3} align="left">
                                             <ValidatedTimePicker
                                                 name="res_open"
-                                                value={this.state.res_open}
+                                                value={this.state.res_open || ''}
                                                 onChange={this.handleDateChange('res_open')}
                                                 ampm={false}
                                                 format="HH:mm น."
@@ -917,7 +1091,7 @@ class EditRestaurant extends Component {
                                         <Grid item xs={3} md={3} align="left">
                                             <ValidatedTimePicker
                                                 name="res_close"
-                                                value={this.state.res_close}
+                                                value={this.state.res_close || ''}
                                                 onChange={this.handleDateChange('res_close')}
                                                 ampm={false}
                                                 format="HH:mm น."
@@ -1023,7 +1197,71 @@ class EditRestaurant extends Component {
                                         <Email className={"ic-color"}/>
                                     </Grid>
                                     <Grid item xs>
-                                         <GoogleMaps key="map" lat={this.state.res_position[0]} showed={false} lng={this.state.res_position[1]} onClickCurrentLocation={this.getGeoLocation} setPosition={this.setLatLngValue}/>
+                                    {
+                                            isScriptLoadSucceed && !this.state.center.errorLatLng ?
+                                            <div data-standalone-searchbox="">
+                                                <div style={{
+                                                    position: 'relative',
+                                                    marginBottom: 10
+                                                }}>
+                                                    <StandaloneSearchBox
+                                                        ref={this.onSearchBoxMounted}
+                                                        bounds={this.bounds}
+                                                        onPlacesChanged={this.onPlacesChanged}
+                                                    >
+                                                        <input
+                                                            type="text"
+                                                            placeholder={this.state.inputLoading ? '' : 'Search your restaurant.'}
+                                                            style={{
+                                                                boxSizing: `border-box`,
+                                                                border: `1px solid transparent`,
+                                                                width: `100%`,
+                                                                height: `42px`,
+                                                                padding: `0 12px`,
+                                                                borderRadius: `3px`,
+                                                                boxShadow: `0 2px 6px rgba(0, 0, 0, 0.3)`,
+                                                                fontSize: `14px`,
+                                                                outline: `none`,
+                                                                textOverflow: `ellipses`,
+                                                            }}
+                                                            value={this.state.searchValue}
+                                                            onChange={this.onChangeSearchBox}
+                                                        />
+                                                    </StandaloneSearchBox>
+                                                    <button type="button" style={{
+                                                        position: 'absolute',
+                                                        background: 'transparent',
+                                                        right: 15,
+                                                        top: 4,
+                                                        border: 'none',
+                                                        height: 30,
+                                                        width: 30,
+                                                        outline: 'none',
+                                                        textAlign: 'center',
+                                                        fontWeight: 'bold',
+                                                        padding: 3,
+                                                        cursor: 'pointer'
+                                                    }} onClick={this.getGeoLocation}><LocationSearching style={{color: Color.kaidelivery}} /></button>
+                                                    { this.state.inputLoading && <span className="inside-input" style={{
+                                                        position: 'absolute',
+                                                        left: 15,
+                                                        top: 4,
+                                                    }}></span> }
+                                                </div>
+                                                <MapWithAMarker
+                                                    loadingElement= {<div style={{ height: `100%` }} />}
+                                                    containerElement= {<div style={{ height: `400px`, display: 'flex', flexDirection: 'column-reverse',position: 'relative' }} />}
+                                                    mapElement= {<div style={{ height: `100%` }} />}
+                                                    onMapLoad={this.onMapMounted}
+                                                    center={this.state.center}
+                                                    onMapClick={this.onMapClick}
+                                                    onDragEnd={this.onDragMap}
+                                                    loading={this.state.loadingMap}
+                                                />
+                                            </div>
+                                            :
+                                            'Please turn on navigator location on google chrome settings'
+                                        }
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -1038,13 +1276,26 @@ class EditRestaurant extends Component {
                     </Paper>
                 </ValidatorForm>
                 <SweetAlert
-                    show={this.state.open}
-                    title={this.state.title}
-                    text={this.state.text}
-                    type={this.state.type}
-                    onConfirm={() => { if(this.state.open) this.sweetalert() }}
-                    onEscapeKey={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
-                    onOutsideClick={() => { if(this.state.open) this.setState({open: !this.state.open}) }}
+                    show={this.state.confirmAlert}
+                    title="Warning"
+                    text="Do you need to update ?"
+                    type="warning"
+                    showCancelButton
+                    onConfirm={() => { this.onSubmit() }}
+                    onCancel={() => { this.setState({confirmAlert: false})  }}
+                    onEscapeKey={() => {if(this.state.confirmAlert) { this.setState({confirmAlert: false}) }}}
+                    onOutsideClick={() => {if(this.state.confirmAlert) { this.setState({confirmAlert: false}) }}}
+                />
+                <SweetAlert
+                    show={this.state.successAlert}
+                    title="Success"
+                    text="Updated successful\nYou need redirect to restaurant information ?"
+                    type="success"
+                    showCancelButton
+                    onConfirm={() => { this.afterSubmit() }}
+                    onCancel={() => { this.setState({successAlert: false}) }}
+                    onEscapeKey={() => {if(this.state.successAlert) { this.setState({successAlert: false}) }}}
+                    onOutsideClick={() => {if(this.state.successAlert) { this.setState({successAlert: false}) }}}
                 />
             </div>
         );
@@ -1053,6 +1304,7 @@ class EditRestaurant extends Component {
 
 EditRestaurant.propTypes = {
   classes: PropTypes.object.isRequired,
+  updateRestaurantName: PropTypes.func.isRequired
 };
 
-export default withRouter(withStyles(styles)(withRules(EditRestaurant)));
+export default withRouter(connect(null, {updateRestaurantName: updateRestaurantName})(withStyles(styles)(withRules(scriptLoader('https://maps.googleapis.com/maps/api/js?key=AIzaSyDCkgDceoiSbeWa29pNeJxmsNipUF7P3uw&v=3.exp&libraries=geometry,drawing,places')(EditRestaurant)))));
