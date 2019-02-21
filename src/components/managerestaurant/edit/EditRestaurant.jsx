@@ -531,6 +531,7 @@ class EditRestaurant extends Component {
             const restypesValue = res_typesValue.map(item => item.value)
 
             let bodyFormData = new FormData()
+            bodyFormData.set('res_id', this.props.res_id);
             bodyFormData.set('res_name', res_name)
             bodyFormData.set('res_email', res_email)
             bodyFormData.set('res_telephone', JSON.stringify(telephone))
@@ -539,12 +540,12 @@ class EditRestaurant extends Component {
             bodyFormData.set('res_open', moment(res_open).format('HH:mm'))
             bodyFormData.set('res_close', moment(res_close).format('HH:mm'))
             bodyFormData.set('res_holiday', (res_holiday.length > 0 ? JSON.stringify(res_holiday) : null))
-            bodyFormData.set('res_typesValue', (restypesValue.length > 0 ? JSON.stringify(restypesValue) : null))
+            bodyFormData.set('restype_id', (restypesValue.length > 0 ? JSON.stringify(restypesValue) : null))
             bodyFormData.set('res_lat', center.lat)
             bodyFormData.set('res_lng', center.lng)
             bodyFormData.append('image', fileimg)
 
-            await API.post(`/restaurants/update/${old_resname}`, bodyFormData, {
+            await API.post(`/restaurants/update/`, bodyFormData, {
                 headers: {
                     'content-type': 'multipart/form-data'
                 }

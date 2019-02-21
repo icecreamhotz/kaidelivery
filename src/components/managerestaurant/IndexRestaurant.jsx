@@ -75,9 +75,6 @@ class IndexRestaurant extends Component {
         console.log(resname)
         const restaurants = await API.post(`restaurants/`, {res_name: resname})
         const { data } = await restaurants
-        console.log(resname)
-        console.log('fetchresid')
-        console.log(data)
         this.setState({
             res_id: data.data.res_id
         })

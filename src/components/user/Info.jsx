@@ -199,7 +199,7 @@ class Info extends Component {
         bodyFormData.set('address', this.state.address)
         bodyFormData.append('image', this.state.image)
 
-        await API.post(`users/update`, bodyFormData, {
+        await API.post(`users/update/info`, bodyFormData, {
             headers: {
                 'content-type': 'multipart/form-data'
             }

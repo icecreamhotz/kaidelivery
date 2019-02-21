@@ -75,7 +75,7 @@ class OneStepInput extends Component {
                 bodyFormData.set('res_name', this.state.res_name)
                 bodyFormData.append('image', this.state.fileimg)
     
-                await API.post('restaurants/create', bodyFormData, {
+                await API.post('restaurants/create/owner', bodyFormData, {
                     headers: {
                         'content-type': 'multipart/form-data'
                     }

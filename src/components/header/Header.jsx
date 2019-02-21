@@ -238,7 +238,7 @@ class Header extends Component {
     }
 
     fetchRestaurantUser = async () => {
-        const restaurants = await API.get('restaurants/owner')
+        const restaurants = await API.get('restaurants/myrestaurant/owner')
         const { data } = await restaurants
         this.setState({
             myRestaurants: data.data,
