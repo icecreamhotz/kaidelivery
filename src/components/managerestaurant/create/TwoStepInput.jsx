@@ -97,6 +97,7 @@ class TwoStepInput extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      res_id: props.resID,
       res_name: props.resName,
       res_email: "",
       res_tel: {
@@ -220,6 +221,9 @@ class TwoStepInput extends Component {
         res_name: nextProps.resName
       });
     }
+    if(this.props.isScriptLoadSucceed !== nextProps.isScriptLoadSucceed) {
+      this.getGeoLocation();
+    }
   }
 
   async componentDidMount() {
@@ -234,7 +238,7 @@ class TwoStepInput extends Component {
       }
       return true;
     });
-
+    
     ValidatorForm.addValidationRule("closeTime", value => {
       if (
         moment(value).format("h:mma") ===
@@ -267,7 +271,6 @@ class TwoStepInput extends Component {
     });
 
     await this.fetchRestaurantTypes();
-    await this.getGeoLocation();
   }
 
   componentWillUnmount() {
@@ -435,6 +438,7 @@ class TwoStepInput extends Component {
       },
       async () => {
         const {
+          res_id,
           center,
           res_name,
           res_email,
@@ -459,6 +463,7 @@ class TwoStepInput extends Component {
         const restypesValue = res_typesValue.map(item => item.value);
 
         const restaurantData = {
+          res_id: res_id,
           res_name: res_name,
           res_email: res_email,
           res_telephone: JSON.stringify(telephone),
@@ -475,7 +480,7 @@ class TwoStepInput extends Component {
         };
 
         await API.post(
-          `restaurants/update/${this.state.res_name}`,
+          `restaurants/update/`,
           restaurantData
         ).then(() => {
           setTimeout(() => {

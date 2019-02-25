@@ -33,6 +33,7 @@ class OneStepInput extends Component {
     constructor(props) {
         super(props);
          this.state = { 
+            res_id: '',
             res_name: '',
             fileimg: null, 
             preview: '', 
@@ -80,13 +81,13 @@ class OneStepInput extends Component {
                         'content-type': 'multipart/form-data'
                     }
                 })
-                .then((rest) => {
-                    console.log('mean')
-                    console.log(rest)
+                .then((rest) => {   
+                    const res_id = rest.data.data.res_id
                     setTimeout(() => {
                         this.setState({
                             loading: false,
-                            successAlert: true
+                            successAlert: true,
+                            res_id: res_id
                         })
                     }, 100);
                 })
@@ -101,7 +102,7 @@ class OneStepInput extends Component {
             successAlert: false
         }, () => {
             this.props.updateRestaurantName(true)
-            this.props.setResName(this.state.res_name)
+            this.props.setResID(this.state.res_id)
             this.props.handleNext()
         })
     }

@@ -120,6 +120,7 @@ class EditRestaurant extends Component {
     constructor(props) {
         super(props);
          this.state = { 
+             res_id: props.res_id,
             old_resname: '',
             res_name: '',
             res_email: '',
@@ -158,6 +159,9 @@ class EditRestaurant extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.props.res_id !== nextProps.res_id) {
+            return true
+        }
         if (this.state.res_name !== nextState.res_name) {
             return true
         }
@@ -244,7 +248,7 @@ class EditRestaurant extends Component {
 
     async componentDidMount() {
         this.mounted = true;
-
+        
         await this.fetchRestaurantTypes()
         await this.fetchRestaurantData()
 
@@ -283,6 +287,14 @@ class EditRestaurant extends Component {
             return true
         })
     
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if(this.props.res_id !== nextProps.res_id) {
+            this.setState({
+                res_id: nextProps.res_id
+            })
+        }
     }
 
     componentWillUnmount() {
@@ -327,9 +339,8 @@ class EditRestaurant extends Component {
     }
 
     fetchRestaurantData = async () => {
-
-        const res_id =  this.props.res_id
-        const restaurantvalue = await API.get(`restaurants/${res_id}`)
+        alert(this.state.res_id)
+        const restaurantvalue = await API.get(`restaurants/${this.state.res_id}`)
         const { data } = await restaurantvalue
         const restaurant = data.data
 
@@ -531,7 +542,7 @@ class EditRestaurant extends Component {
             const restypesValue = res_typesValue.map(item => item.value)
 
             let bodyFormData = new FormData()
-            bodyFormData.set('res_id', this.props.res_id);
+            bodyFormData.set('res_id', this.state.res_id);
             bodyFormData.set('res_name', res_name)
             bodyFormData.set('res_email', res_email)
             bodyFormData.set('res_telephone', JSON.stringify(telephone))

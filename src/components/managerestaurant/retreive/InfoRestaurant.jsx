@@ -97,24 +97,16 @@ class InfoRestaurant extends Component {
     }
 
     async componentDidMount() {
-        await this.fetchRestaurantData(this.props.match.params.resname)
+        await this.fetchRestaurantData()
     }
 
-    componentWillReceiveProps(newProps) {
-        if(this.props.match.params.resname !== newProps.match.params.resname) {
-            this.fetchRestaurantData(newProps.match.params.resname)
-        }
-    }
-
-    fetchRestaurantData = async (resname) => {
+    fetchRestaurantData = async () => {
         this.setState({
             loading: true
         })
         const res_id = this.props.res_id
         const restaurant = await API.get(`restaurants/${res_id}`)
         const { data } = await restaurant
-
-        alert(data.data)
         
         if(data.data.length === 0) {
             this.props.history.push('/myrestaurant')
