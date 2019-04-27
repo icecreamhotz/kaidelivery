@@ -7,6 +7,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import InputBase from '@material-ui/core/InputBase';
 
 import { FormattedMessage } from 'react-intl'
+import RestaurantComponent from '../restaurant/RestaurantComponent'
 
 const styles = theme => ({
     hero: {
@@ -18,7 +19,7 @@ const styles = theme => ({
         display: 'flex'
     },
     content: {
-        width: 600,
+        width: "100%",
         flexDirection: 'column',
         alignItems: 'center',
         margin: 'auto',
@@ -100,6 +101,7 @@ class Welcome extends Component {
                         </div>
                     </Grid>
                 </Grid>
+                <RestaurantComponent />
             </div>
         )
     }

@@ -331,7 +331,6 @@ class InfoFoods extends React.Component {
     async componentDidMount() {
         await this.fetchFoodsData()
         await this.fetchFoodTypesFromAPI()
-        console.log(this.props.res_id)
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -634,6 +633,10 @@ class InfoFoods extends React.Component {
 
         bodyFormData.set('food_total', JSON.stringify(food_total))
 
+        for (var pair of bodyFormData.entries()) {
+            console.log(pair[0]+ ', ' + pair[1]); 
+        }
+
         await API.post(`foods/update/${loadData.food_id}`, bodyFormData, {
             headers: {
                 'content-type': 'multipart/form-data'
@@ -644,20 +647,37 @@ class InfoFoods extends React.Component {
             this.setState({
                 data: getData,
                 index: 0
+            }, () => {
+                setTimeout(() => {
+                    this.setState({
+                        successAlert: true
+                    })
+                }, 100);
             })
         })
-        
-        setTimeout(() => {
-            this.setState({
-                successAlert: true
-            })
-        }, 100);
     }
 
     onSubmit = (idx) => {
         this.setState({
             index: idx
         }, () => this.refs['form'].submit())
+    }
+
+    getFoodTypeName = (foodtype_id) => {
+        
+        const foodtypes = [...this.state.foodtypes]
+        const findFoodtypeName = foodtypes.filter(item => item.foodtype_id === foodtype_id)
+
+        return (findFoodtypeName[0]) ? findFoodtypeName[0].foodtype_name : ""
+    }
+
+    afterSubmit = () => {
+        this.setState({
+            successAlert: false
+        }, () => {
+            this.fetchFoodsData()
+            this.fetchFoodTypesFromAPI()
+        })
     }
 
     render() {
@@ -753,7 +773,7 @@ class InfoFoods extends React.Component {
                                         n.edit ?
                                         <FoodTypesList holder={n} index={newIndex} classes={classes} loading={loading} foodtypes={foodtypes} handleHoldersOnchange={this.handleHoldersOnchange}/>
                                         :   
-                                        n.foodtype_id
+                                        this.getFoodTypeName(n.foodtype_id)
                                     }
                                 </TableCell>
                                 <TableCell align="right" style={{width: 200}}>

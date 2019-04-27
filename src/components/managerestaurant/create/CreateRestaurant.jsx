@@ -30,6 +30,7 @@ class CreateRestaurant extends Component {
     state = {
         activeStep: 0,
         res_id: '',
+        res_name: '',
         loading: false
     };
 
@@ -42,6 +43,12 @@ class CreateRestaurant extends Component {
     setResID = (res_id) => {
         this.setState({
             res_id: res_id
+        })
+    }
+
+    setResName = (res_name) => {
+        this.setState({
+            res_name: res_name
         })
     }
 
@@ -80,9 +87,9 @@ class CreateRestaurant extends Component {
                     </div>
                 ) : (
                     <div>
-                    {activeStep === 0 && <OneStepInput handleNext={this.handleNext} setResID={this.setResID} />}
-                    {activeStep === 1 && <TwoStepInput handleNext={this.handleNext} resID={this.state.res_id} />}
-                    {activeStep === 2 && <ThreeStepInput />}
+                    {activeStep === 0 && <OneStepInput handleNext={this.handleNext} setResID={this.setResID} setResName={this.setResName} />}
+                    {activeStep === 1 && <TwoStepInput handleNext={this.handleNext} resID={this.state.res_id} resName={this.state.res_name} />}
+                    {activeStep === 2 && <ThreeStepInput resName={this.state.res_name} />}
                     </div>
                 )}
                 </div>

@@ -109,7 +109,7 @@ class TabSignUp extends Component {
             return
         }
 
-        const tel = `${this.state.telephone1} ${this.state.telephone2} ${this.state.telephone3}`
+        const tel = `${this.state.telephone1}${this.state.telephone2}${this.state.telephone3}`
 
         const data = {
             username: this.state.username,

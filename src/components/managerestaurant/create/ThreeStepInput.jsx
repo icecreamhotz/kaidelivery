@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import Fab from '@material-ui/core/Fab';
 import ArrowForward from '@material-ui/icons/ArrowForward';
 import { Color } from '../../../variable/Color'
+import { NavLink } from 'react-router-dom'
 
 import './success.scss'
 
@@ -78,10 +79,12 @@ class ThreeStepInput extends Component {
                                     </Typography>
                                 </Grid>
                                 <Grid item xs>
-                                    <Fab variant="extended" color="primary" aria-label="Add" className={`${classes.margin} ${classes.button}`}>
-                                    <ArrowForward className={classes.extendedIcon} />
-                                        Add more food
-                                    </Fab>
+                                    <NavLink to={`/myrestaurant/${this.props.resName}`} style={{textDecoration: 'none'}}>
+                                        <Fab variant="extended" color="primary" aria-label="Add" className={`${classes.margin} ${classes.button}`}>
+                                        <ArrowForward className={classes.extendedIcon} />
+                                            Add more food
+                                        </Fab>
+                                    </NavLink>
                                 </Grid>
                             </div>
                         </Paper>

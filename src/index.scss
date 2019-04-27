@@ -13,3 +13,76 @@ body {
 .ic-color {
     color: #ff9100;
 }
+
+.kai-container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+  
+  @media (min-width: 576px) {
+    .kai-container {
+      max-width: 540px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .kai-container {
+      max-width: 720px;
+    }
+  }
+  
+  @media (min-width: 992px) {
+    .kai-container {
+      max-width: 960px;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .kai-container {
+      max-width: 1140px;
+    }
+  }
+
+  .image-wrapper {
+    position: relative;
+    padding-bottom: 56.2%;
+    margin: 0 auto;
+    width: 100%;
+    overflow: hidden;
+    font-size: 0;
+  }
+
+  .image-wrapper:hover img {
+    transform: scale(1.2);
+  }
+  
+  .image-wrapper img {
+    position: absolute;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  a:focus.styledlink {
+    text-decoration: none;
+  }
+
+  a:hover.styledlink {
+    text-decoration: none;
+  }
+
+  a:visited.styledlink {
+    text-decoration: none;
+  }
+
+  a:link.styledlink {
+    text-decoration: none;
+  }
+
+  a:active.styledlink {
+    text-decoration: none;
+  }

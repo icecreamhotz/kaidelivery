@@ -38,7 +38,6 @@ class OneStepInput extends Component {
             fileimg: null, 
             preview: '', 
             altimg: '', 
-            confirmAlert: false, 
             successAlert: false,
             open: false, 
             text: '',
@@ -68,10 +67,8 @@ class OneStepInput extends Component {
 
     saveData = () => {
         this.setState({
-            confirmAlert: false,
             loading: true
         }, async () => {
-            if(!this.state.confirmAlert) {
                 let bodyFormData = new FormData()
                 bodyFormData.set('res_name', this.state.res_name)
                 bodyFormData.append('image', this.state.fileimg)
@@ -92,8 +89,6 @@ class OneStepInput extends Component {
                     }, 100);
                 })
                 .catch(err => console.log(err))
-            }
-      
         })
     }
 
@@ -103,6 +98,7 @@ class OneStepInput extends Component {
         }, () => {
             this.props.updateRestaurantName(true)
             this.props.setResID(this.state.res_id)
+            this.props.setResName(this.state.res_name)
             this.props.handleNext()
         })
     }
@@ -110,7 +106,7 @@ class OneStepInput extends Component {
     submit = (e) => {
         e.preventDefault()
 
-        this.setState({confirmAlert: true})
+        this.saveData()
     }
 
     render() {
@@ -169,17 +165,6 @@ class OneStepInput extends Component {
                     </Grid>
                 </Grid>
                 </ValidatorForm>
-                <SweetAlert
-                    show={this.state.confirmAlert}
-                    title="Warning"
-                    text="Do you need to insert ?"
-                    type="warning"
-                    showCancelButton
-                    onConfirm={() => { this.saveData() }}
-                    onCancel={() => { this.setState({confirmAlert: false})  }}
-                    onEscapeKey={() => { this.setState({confirmAlert: false}) }}
-                    onOutsideClick={() => {if(this.state.confirmAlert) { this.setState({confirmAlert: false}) }}}
-                />
                 <SweetAlert
                     show={this.state.successAlert}
                     title="Success"

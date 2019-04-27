@@ -1,0 +1,71 @@
+.restaurant-info {
+    display: block;
+    position: relative;
+    z-index: 2;
+}
+
+.headline {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -webkit-flex-flow: row nowrap;
+    -ms-flex-flow: row nowrap;
+    flex-flow: row nowrap;
+}
+
+.name {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: normal;
+    display: block;
+    margin: 0;
+    line-height: 1.3em;
+    color: #333;
+    font-size: 1.6rem;
+    font-weight: 700;
+    padding: 4px 16px 0 0;
+}
+
+.restaurant-info .ratings-component {
+    flex: 0 0 auto;
+    align-self: center;
+    -webkit-box-flex: 0;
+}
+
+.restaurant-info .ratings-component .stars {
+    vertical-align: middle;
+}
+
+.ratings-component .rating {
+    font-size: 1.2rem;
+    padding-left: 2px;
+    color: #333;
+}
+
+.restaurant-type-text {
+    display: inline;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: lowercase;
+}
+
+.group-food-block {
+    width: 100%;
+    border-top: 1px solid #ebebeb;
+    border-bottom: 1px solid #ebebeb;
+    background: #fff;
+    color: black;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}

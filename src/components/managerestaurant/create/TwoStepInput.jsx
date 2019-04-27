@@ -114,7 +114,6 @@ class TwoStepInput extends Component {
       res_address: "",
       loading: true,
       successAlert: false,
-      confirmAlert: false,
       res_open: new Date(),
       res_close: new Date(),
       res_holiday: [],
@@ -180,9 +179,6 @@ class TwoStepInput extends Component {
       return true;
     }
     if (this.state.res_typesValue.length !== nextState.res_typesValue.length) {
-      return true;
-    }
-    if (this.state.confirmAlert !== nextState.confirmAlert) {
       return true;
     }
     if (this.state.successAlert !== nextState.successAlert) {
@@ -433,7 +429,6 @@ class TwoStepInput extends Component {
   onSubmit = async () => {
     this.setState(
       {
-        confirmAlert: false,
         loading: true
       },
       async () => {
@@ -479,6 +474,8 @@ class TwoStepInput extends Component {
           res_lng: center.lng
         };
 
+        console.log(restaurantData);
+
         await API.post(
           `restaurants/update/`,
           restaurantData
@@ -508,9 +505,7 @@ class TwoStepInput extends Component {
   handleSubmit = e => {
     e.preventDefault();
 
-    this.setState({
-      confirmAlert: true
-    });
+    this.onSubmit()
   };
 
   onMapMounted = map => {
@@ -1294,27 +1289,6 @@ class TwoStepInput extends Component {
             </Grid>
           </Paper>
         </ValidatorForm>
-        <SweetAlert
-          show={this.state.confirmAlert}
-          title="Warning"
-          text="Do you need to insert ?"
-          type="warning"
-          showCancelButton
-          onConfirm={() => {
-            this.onSubmit();
-          }}
-          onCancel={() => {
-            this.setState({ confirmAlert: false });
-          }}
-          onEscapeKey={() => {
-            this.setState({ confirmAlert: false });
-          }}
-          onOutsideClick={() => {
-            if (this.state.confirmAlert) {
-              this.setState({ confirmAlert: false });
-            }
-          }}
-        />
         <SweetAlert
           show={this.state.successAlert}
           title="Success"

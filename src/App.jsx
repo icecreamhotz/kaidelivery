@@ -15,6 +15,8 @@ import ResetPassword from './components/user/ResetPassword'
 import MyRestaurant from './components/managerestaurant/create/CreateRestaurant'
 import IndexRestaurant from './components/managerestaurant/IndexRestaurant'
 
+import Restaurant from './components/restaurant/RestaurantDetail'
+
 import UserRoute from './components/router/UserRoute'
 import GuestRoute from './components/router/GuestRoute'
 
@@ -73,6 +75,7 @@ class App extends Component {
                     <UserRoute location={location} path='/reset' component={ResetPassword} />
                     <UserRoute  exact location={location} path='/myrestaurant' component={MyRestaurant} />
                     <UserRoute location={location} path='/myrestaurant/:resname' component={IndexRestaurant} />
+                    <GuestRoute location={location} path='/restaurant/:resid' component={Restaurant} />
                 </Switch>
           </Layout>
         </MuiThemeProvider>

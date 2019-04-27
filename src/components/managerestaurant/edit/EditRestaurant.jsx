@@ -339,7 +339,6 @@ class EditRestaurant extends Component {
     }
 
     fetchRestaurantData = async () => {
-        alert(this.state.res_id)
         const restaurantvalue = await API.get(`restaurants/${this.state.res_id}`)
         const { data } = await restaurantvalue
         const restaurant = data.data
