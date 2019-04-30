@@ -24,7 +24,7 @@ class Facebook extends Component {
         image: response.picture.data.url
     }
     
-    this.props.loginFacebook(data).then(() => this.props.history.replace('/profile'))
+    this.props.loginFacebook(data)
   };
 
   render() {

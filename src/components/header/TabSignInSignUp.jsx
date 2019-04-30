@@ -27,9 +27,12 @@ const styles = theme => ({
 })
 
 class TabSignInSignUp extends React.Component {
-  state = {
-    value: 0,
-  };
+  constructor(props) {
+      super(props)
+      this.state = {
+          value: props.value
+      }
+  }
 
   handleChange = (event, value) => {
     this.setState({ value });

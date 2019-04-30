@@ -301,6 +301,11 @@ class Header extends Component {
         this.setState({ localeEl: null });
     };
 
+    handleLogout = () => {
+        this.props.logout()
+        this.props.history.push('/')
+    }
+
     render() {
         const { classes, locale, theme, logout } = this.props
         const { anchorEl, loading, avatar, localeEl, myRestaurants, loadingRes, loadingLeft} = this.state
@@ -343,7 +348,7 @@ class Header extends Component {
                                 onClick={this.handleMenu}
                                 color="inherit"
                             >
-                            <Avatar alt={this.state.user.name} src={`http://localhost:3000/users/${(avatar ? avatar : 'noimg.png')}`} className={classes.bigAvatar} />
+                            <Avatar alt={this.state.user.name} src={`http://localhost:3000/users/${(avatar ? avatar : 'noimg.png')}`} />
                         </IconButton>
                     </div>
                     {
@@ -447,7 +452,7 @@ class Header extends Component {
                         </List>
                         <Divider />
                         <List>
-                            <ListItem button onClick={() => logout()} style={{backgroundColor: Color.danger}}>
+                            <ListItem button onClick={() => this.handleLogout()} style={{backgroundColor: Color.danger}}>
                                 <ListItemIcon style={{color: '#FFFFFF'}}><Logout /></ListItemIcon>
                                 <ListItemText  
                                     disableTypography

@@ -9,6 +9,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 
 import { FormattedMessage } from 'react-intl'
+import { connect } from 'react-redux'
+import { triggerLoginSignupHeader } from "../../actions/header.js";
 
 const styles = theme => ({
   root: {
@@ -22,19 +24,37 @@ const styles = theme => ({
 class ModalLogin extends React.Component {
   state = {
     open: false,
+    value: 0
   };
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.status !== this.props.status) {
+        this.setState({
+          open: nextProps.status.alertlogin,
+          value: nextProps.status.alerttabindex
+        })
+    }
+  }
 
   handleOpen = () => {
     this.setState({ open: true });
+    this.props.triggerLoginSignupHeader({
+      alertlogin: true,
+      alerttabindex: 0
+    })
   };
 
   handleClose = () => {
     this.setState({ open: false });
+    this.props.triggerLoginSignupHeader({
+      alertlogin: false,
+      alerttabindex: 0
+    })
   };
 
   render() {
     const { classes } = this.props;
-    const { open } = this.state;
+    const { open, value } = this.state;
     return (
       <div>
         <Button color="inherit" onClick={this.handleOpen}>
@@ -48,7 +68,7 @@ class ModalLogin extends React.Component {
         </Button>
         <Dialog open={open} onClose={this.handleClose}>
           <DialogContent className={classes.root}>
-            <DialogContentText component={'div'}><TabSignInSignUp setClose={this.handleClose}/></DialogContentText>
+            <DialogContentText component={'div'}><TabSignInSignUp setClose={this.handleClose} value={value}/></DialogContentText>
           </DialogContent>
         </Dialog>
       </div>
@@ -60,4 +80,12 @@ ModalLogin.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(ModalLogin);
+function mapStateToProps(state) {
+  return {
+    status: state.header.status
+  }
+}
+
+export default withStyles(styles)(connect(mapStateToProps, {
+  triggerLoginSignupHeader: triggerLoginSignupHeader
+})(ModalLogin));

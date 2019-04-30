@@ -165,4 +165,4 @@ class GoogleMaps extends React.Component {
   }
 }
 
-export default scriptLoader('https://maps.googleapis.com/maps/api/js?key=AIzaSyDCkgDceoiSbeWa29pNeJxmsNipUF7P3uw&v=3.exp&libraries=geometry,drawing,places')(withStyles(styles, { withTheme: true })(GoogleMaps));
+export default scriptLoader('https://maps.googleapis.com/maps/api/js?key=AIzaSyB1wuvlSdpv395HjKYb1afXx_4S1c8ak4c&v=3.exp&libraries=geometry,drawing,places')(withStyles(styles, { withTheme: true })(GoogleMaps));
