@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./chat.scss";
 import firebase from "../../helper/firebase.js";
 import "moment/locale/th";
+import { connect } from "react-redux";
 
 import moment from "moment";
 
@@ -170,4 +171,13 @@ class ChatComponent extends Component {
   }
 }
 
-export default ChatComponent;
+function mapStateToProps(state) {
+  return {
+    orderName: state.order.orderName
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  null
+)(ChatComponent);

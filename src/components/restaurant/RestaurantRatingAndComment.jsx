@@ -33,7 +33,7 @@ class RestaurantRatingAndComment extends Component {
     const score = await API.get(`restaurants/score/comment/${restaurant.res_id}`);
     const { data } = await score;
     const scoreData = data.data;
-    
+    console.log(scoreData);
     this.setState({
       restaurantScore: scoreData
     });
@@ -49,7 +49,6 @@ class RestaurantRatingAndComment extends Component {
 
   render() {
     const { restaurant, restaurantScore } = this.state;
-    console.log(restaurantScore);
     return (
       <div>
         <Typography
@@ -81,10 +80,13 @@ class RestaurantRatingAndComment extends Component {
             <DialogContentText>
               <Grid container>
                 {restaurantScore.map((item, idx) => {
+                  const name = (item.user === null) ? "Guest Guest" : `${item.user.name} ${item.user.lastname}`
                   const messageTime = moment(item.resscore_date).format(
                     "YYYY-MM-DD"
                   );
                   const rating = parseFloat(item.resscore_rating).toFixed(2);
+                  const avatar = (item.user === null) ? "noimg.png" : item.user.avatar
+                  console.log(item);
                   return (
                     <Grid
                       item
@@ -105,7 +107,7 @@ class RestaurantRatingAndComment extends Component {
                           <Avatar
                             alt="Remy Sharp"
                             src={`http://localhost:3000/users/${
-                              item.user.avatar
+                              avatar
                             }`}
                           />
                         </Grid>
@@ -117,7 +119,7 @@ class RestaurantRatingAndComment extends Component {
                               marginLeft: 15
                             }}
                           >
-                            {`${item.user.name} ${item.user.lastname}`}
+                            {name}
                           </Typography>
                         </Grid>
                       </Grid>

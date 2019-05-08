@@ -30,7 +30,7 @@ class RestaurantComponent extends Component {
   }
 
   loadRestaurantAndTypes = async () => {
-    const restaurants = await API.get(`restaurants/`);
+    const restaurants = await API.get(`restaurants/open`);
     const restaurantData = await restaurants;
     const restaurantTypes = await API.get("restauranttypes/");
     const restaurantTypeData = await restaurantTypes;
@@ -45,7 +45,6 @@ class RestaurantComponent extends Component {
   };
 
   render() {
-    const { classes } = this.props;
     const { loading, restaurants, restaurantTypes } = this.state;
     return (
       <div className="content-start kai-container">

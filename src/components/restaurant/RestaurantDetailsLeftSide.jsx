@@ -57,7 +57,7 @@ class RestaurantDetailsLeftSide extends Component {
       otpOpen: false,
       telephone: "",
       otp: "",
-      sendedotp: true,
+      sendedotp: false,
       success: false,
       failed: false,
       roleopen: false
@@ -237,13 +237,13 @@ class RestaurantDetailsLeftSide extends Component {
       rate_id,
       endpoint_details,
       order_details,
-      searchValue
+      searchValue,
+      telephone
     } = this.state;
 
     const newMinMinute = minminute === "" ? 0 : minminute;
     const orderStart = moment().format("HH:mm:ss");
-
-    API.post("orders/", {
+    let data = {
       menu: this.props.menu,
       min_minute: newMinMinute,
       order_details: order_details,
@@ -255,7 +255,14 @@ class RestaurantDetailsLeftSide extends Component {
       endpoint_details: endpoint_details,
       order_deliveryprice: deliveryprice,
       order_start: orderStart
-    })
+    };
+
+    const url = !this.props.isAuthenticated ? `guest/` : "";
+    if (!this.props.isAuthenticated) {
+      data = { ...data, telephone: telephone };
+    }
+
+    API.post(`orders/${url}`, data)
       .then(order => {
         const data = order.data.order_name;
         let ref = firebase.database().ref("Orders");
@@ -298,8 +305,8 @@ class RestaurantDetailsLeftSide extends Component {
 
   handleOpen = () => {
     this.setState({
-      otpOpen: true,
-      roleopen: false
+      roleopen: false,
+      otpOpen: true
     });
   };
 
@@ -327,33 +334,37 @@ class RestaurantDetailsLeftSide extends Component {
 
   sendRequestOTP = () => {
     const { telephone } = this.state;
-    this.props.setLoadingTrue();
+    // this.props.setLoadingTrue();
 
-    API.post("orders/otp", { telephone: telephone })
-      .then(() => {
-        this.setState(
-          {
-            success: true,
-            sendedotp: true
-          },
-          () => this.props.setLoadingFalse()
-        );
-      })
-      .catch(() => {
-        this.setState(
-          {
-            failed: true
-          },
-          () => this.props.setLoadingFalse()
-        );
-      });
+    this.setState({
+      success: true,
+      sendedotp: true
+    });
+    // API.post("orders/otp", { telephone: telephone })
+    //   .then(() => {
+    //     this.setState(
+    //       {
+    //         success: true,
+    //         sendedotp: true
+    //       },
+    //       () => this.props.setLoadingFalse()
+    //     );
+    //   })
+    //   .catch(() => {
+    //     this.setState(
+    //       {
+    //         failed: true
+    //       },
+    //       () => this.props.setLoadingFalse()
+    //     );
+    //   });
   };
 
   sendOTP = () => {
-    const { otp } = this.state;
+    const { otp, telephone } = this.state;
     this.props.setLoadingTrue();
 
-    API.get(`orders/otp/${otp}`)
+    API.get(`orders/otp/${otp}/${telephone}`)
       .then(otp => {
         if (otp.data.data.otp_id) {
           this.setState(

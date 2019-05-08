@@ -4,8 +4,9 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import firebase from "../../helper/firebase.js";
+import { connect } from "react-redux";
 
-export default class LookingEmployee extends React.Component {
+class LookingEmployee extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -52,9 +53,12 @@ export default class LookingEmployee extends React.Component {
         let myqueue = 0;
         snapshot.forEach(item => {
           totalqueue += 1;
-          if (item === orderName) {
+          if (item.key === orderName) {
             myqueue = totalqueue;
+           
           }
+          console.log(item.key);
+          console.log(orderName);
         });
         const previousQueue = myqueue - 1;
         this.setState({
@@ -114,3 +118,14 @@ export default class LookingEmployee extends React.Component {
     );
   }
 }
+
+function mapStateToProps(state) {
+  return {
+    orderName: state.order.orderName
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  null
+)(LookingEmployee);

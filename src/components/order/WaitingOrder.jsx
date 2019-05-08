@@ -90,7 +90,7 @@ class WaitingOrder extends Component {
             );
             const { data } = await foodanddetails;
             const realData = data.data[0];
-            if (typeof realData !== "undefined") {
+            if (typeof realData !== "undefined" || realData.order_id === null) {
               const { employee } = this.state;
               if (employee === null) {
                 this.checkOrderStatus();
@@ -140,10 +140,12 @@ class WaitingOrder extends Component {
     const foodanddetails = await API.get(`orders/name/${this.state.orderName}`);
     const { data } = await foodanddetails;
     const realData = data.data[0];
-    if (typeof realData === "undefined") {
+    console.log(realData);
+    if (typeof realData === "undefined" || realData.order_id === null) {
       this.setState({
         activeStep: 6,
-        loading: false
+        loading: false,
+        loadingFirebase: false
       });
     } else {
       const status = parseInt(realData.order_status);
@@ -190,6 +192,8 @@ class WaitingOrder extends Component {
         .toFixed(2);
       total = (parseFloat(subtotal) + parseFloat(deliveryprice)).toFixed(2);
     }
+    let guestUser = { name: 'Guest', lastname: 'Guest', user_id: null, avatar: 'noimg.png' } 
+    const checkUser = user === null ? guestUser : user
     return (
       <div className="content-start kai-container">
         {activeStep === 6 ? (
@@ -336,7 +340,7 @@ class WaitingOrder extends Component {
             <ChatComponent
               orderName={this.state.orderName}
               employee={employee}
-              user={user}
+              user={checkUser}
             />
           </div>
         ) : (
@@ -348,14 +352,14 @@ class WaitingOrder extends Component {
               <RateEmployee
                 employee={employee}
                 setRatingStep={this.setRatingStep}
-                user={user}
+                user={checkUser}
               />
             ) : (
               ""
             )}
             {this.state.activeRateStep === 1 ? (
               <RateRestaurant
-                user={user}
+                user={checkUser}
                 restaurant={restaurant}
                 setRatingStep={this.setRatingStep}
               />

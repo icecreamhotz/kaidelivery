@@ -178,7 +178,8 @@ class Header extends Component {
         loadingLeft: true,
         loadingRes: false,
         selectedIndex: '',
-        refresh: false
+        refresh: false,
+        myrestaurantClick: false
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -277,16 +278,18 @@ class Header extends Component {
     }
 
     handleListItemClick = (event, index) => {
+        const { myrestaurantClick } = this.state
         if(index === '/myrestaurant') {
             this.props.updateTriggerURL(true)
         }
 
-        this.setState({ selectedIndex: index})
+        this.setState({ selectedIndex: index, myrestaurantClick: !myrestaurantClick}, () => this.props.updateTriggerComponent(this.state.myrestaurantClick))
     }
     
     handleListResItemClick = (event, res_id, index) => {
-        this.props.updateTriggerComponent(true)
-        this.setState({ selectedIndex: index})
+        const { myrestaurantClick } = this.state
+        this.setState({ selectedIndex: index, myrestaurantClick: !myrestaurantClick}, () => 
+        this.props.updateTriggerComponent(this.state.myrestaurantClick))
     }
 
     handleDrawerClose = () => {

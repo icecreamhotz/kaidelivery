@@ -14,6 +14,7 @@ import Edit from "@material-ui/icons/Edit";
 import DeleteForever from "@material-ui/icons/DeleteForever";
 import Divider from "@material-ui/core/Divider";
 import FastFood from "@material-ui/icons/Fastfood";
+import Assessment from "@material-ui/icons/Assessment";
 import { connect } from "react-redux";
 import {
   updateTriggerComponent,
@@ -27,6 +28,7 @@ import InfoRestaurant from "./retreive/InfoRestaurant";
 import EditRestaurant from "./edit/EditRestaurant";
 import CreateFoodComponent from "./../managefoods/create/CreateFoodComponent";
 import InfoFoods from "../managefoods/retreive/InfoFoods";
+import CustomersTotalReport from "./report/CustomersTotalReport";
 
 const styles = theme => ({
   paper: {
@@ -66,15 +68,19 @@ const styles = theme => ({
 });
 
 class IndexRestaurant extends Component {
-  state = {
-    res_id: "",
-    component: 0,
-    open: false,
-    loading: true,
-    type: "info",
-    text: "Do you need delete ?",
-    title: "Warning"
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      res_id: "",
+      component: 0,
+      open: false,
+      loading: true,
+      type: "info",
+      text: "Do you need delete ?",
+      title: "Warning",
+      myrestaurantClick: props.resComponent
+    };
+  }
 
   async componentDidMount() {
     await this.fetchRestaurantID();
@@ -101,10 +107,13 @@ class IndexRestaurant extends Component {
   }
 
   componentWillReceiveProps(newProps) {
-    if (newProps.resComponent) {
-      this.setState({ component: 0 }, () => {
-        this.props.updateTriggerComponent(false);
-      });
+    if (newProps.resComponent !== this.state.myrestaurantClick) {
+      this.setState(
+        { component: 0, myrestaurantClick: newProps.resComponent },
+        () => {
+          this.props.updateTriggerComponent(this.state.myrestaurantClick);
+        }
+      );
     }
   }
 
@@ -170,6 +179,9 @@ class IndexRestaurant extends Component {
     return (
       <div className="content-start">
         {this.state.loading ? <Loading loaded={this.state.loading} /> : ""}
+        <Typography variant="h4" gutterBottom>
+          {`${decodeURI(this.props.match.params.resname)}`}
+        </Typography>
         {component === 0 && (
           <Grid container className={classes.root}>
             <Grid
@@ -183,9 +195,6 @@ class IndexRestaurant extends Component {
                 <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom>
                     Menu
-                  </Typography>
-                  <Typography variant="subtitle1" gutterBottom>
-                    {`${decodeURI(this.props.match.params.resname)}`}
                   </Typography>
                 </Grid>
                 <Divider style={{ width: "100%" }} />
@@ -298,9 +307,6 @@ class IndexRestaurant extends Component {
                   <Typography variant="h3" gutterBottom>
                     Foods
                   </Typography>
-                  <Typography variant="subtitle1" gutterBottom>
-                    {`${decodeURI(this.props.match.params.resname)}`}
-                  </Typography>
                 </Grid>
                 <Divider style={{ width: "100%" }} />
                 <Grid item container spacing={24} style={{ marginTop: 15 }}>
@@ -369,6 +375,62 @@ class IndexRestaurant extends Component {
                 </Grid>
               </Grid>
             </Grid>
+            <Grid
+              item
+              container
+              xs={12}
+              className={classes.grid}
+              alignItems="center"
+            >
+              <Grid container direction="column">
+                <Grid item xs={12}>
+                  <Typography variant="h3" gutterBottom>
+                    Reports
+                  </Typography>
+                </Grid>
+                <Divider style={{ width: "100%" }} />
+                <Grid
+                  item
+                  container
+                  spacing={24}
+                  style={{ marginTop: 15 }}
+                  xs={6}
+                >
+                  <Grid
+                    item
+                    sm
+                    className={classes.pointerHover}
+                    onClick={() => this.changeValueComponent(5)}
+                  >
+                    <Paper className={classes.paper}>
+                      <Grid item className={classes.infoGrid} container>
+                        <Grid
+                          item
+                          style={{
+                            backgroundColor: "#df42f4"
+                          }}
+                          container
+                          sm={4}
+                          alignItems="center"
+                          justify="center"
+                        >
+                          <Assessment className={classes.largeIcon} />
+                        </Grid>
+                        <Grid
+                          item
+                          container
+                          sm
+                          alignItems="center"
+                          justify="center"
+                        >
+                          Customers
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
         )}
         {component === 1 && <InfoRestaurant res_id={this.state.res_id} />}
@@ -390,6 +452,7 @@ class IndexRestaurant extends Component {
             res_id={this.state.res_id}
           />
         )}
+        {component === 5 && <CustomersTotalReport res_id={this.state.res_id} />}
         <SweetAlert
           show={this.state.open}
           title={this.state.title}
