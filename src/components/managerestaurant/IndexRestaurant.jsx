@@ -72,6 +72,8 @@ class IndexRestaurant extends Component {
     super(props);
     this.state = {
       res_id: "",
+      res_status: "",
+      res_rate: 0,
       component: 0,
       open: false,
       loading: true,
@@ -90,8 +92,20 @@ class IndexRestaurant extends Component {
     const resname = decodeURI(this.props.match.params.resname);
     const restaurants = await API.post(`restaurants/`, { res_name: resname });
     const { data } = await restaurants;
+
+    const status = data.data.res_status;
+    let resStatus;
+    if (status === "0") {
+      resStatus = "Waiting for approval";
+    } else if (status === "1") {
+      resStatus = "Approved";
+    } else if (status === "2") {
+      resStatus = "Closed";
+    }
     this.setState({
       res_id: data.data.res_id,
+      res_status: resStatus,
+      res_rate: data.data.res_quota,
       loading: false
     });
   };
@@ -120,17 +134,9 @@ class IndexRestaurant extends Component {
   sweetalert = () => {
     const { type } = this.state;
     if (type === "success") {
-      this.setState(
-        {
-          open: false
-        },
-        () => {
-          setTimeout(() => {
-            this.props.updateRestaurantName(true);
-            this.props.history.push("/myrestaurant");
-          }, 100);
-        }
-      );
+      this.setState({
+        open: false
+      });
     }
     if (type === "info") {
       this.deleteRestaurant();
@@ -160,9 +166,10 @@ class IndexRestaurant extends Component {
                 setTimeout(() => {
                   this.setState({
                     type: "success",
-                    text: "Deleted successful",
+                    text: "Close restaurant successful",
                     title: "Success",
-                    open: true
+                    open: true,
+                    res_status: "Closed"
                   });
                 }, 100);
               }
@@ -175,12 +182,15 @@ class IndexRestaurant extends Component {
 
   render() {
     const { classes } = this.props;
-    const { component } = this.state;
+    const { component, res_status, res_rate } = this.state;
     return (
       <div className="content-start">
         {this.state.loading ? <Loading loaded={this.state.loading} /> : ""}
         <Typography variant="h4" gutterBottom>
-          {`${decodeURI(this.props.match.params.resname)}`}
+          {`${decodeURI(this.props.match.params.resname)} (${res_status})`}
+        </Typography>
+        <Typography variant="subtitle1" gutterBottom>
+          {`Split ratio: ${res_rate}%`}
         </Typography>
         {component === 0 && (
           <Grid container className={classes.root}>

@@ -16,7 +16,9 @@ import IndexRestaurant from "./components/managerestaurant/IndexRestaurant";
 
 import Restaurant from "./components/restaurant/RestaurantDetail";
 
-import WaitingOrder from './components/order/WaitingOrder'
+import WaitingOrder from "./components/order/WaitingOrder";
+
+import HistoryComponent from "./components/history/HistoryComponent";
 
 import UserRoute from "./components/router/UserRoute";
 import GuestRoute from "./components/router/GuestRoute";
@@ -68,7 +70,7 @@ class App extends Component {
       <IntlProvider key={lang} locale={lang} messages={messages[lang]}>
         <MuiThemeProvider theme={theme}>
           <Switch>
-          <GuestRoute
+            <GuestRoute
               exact
               location={location}
               path="/"
@@ -82,13 +84,18 @@ class App extends Component {
             <GuestRoute
               exact
               location={location}
-              path="/observe"
+              path="/tracking"
               component={WaitingOrder}
             />
             <GuestRoute
               location={location}
               path="/reset/:token"
               component={ForgotPassword}
+            />
+            <GuestRoute
+              location={location}
+              path="/history"
+              component={HistoryComponent}
             />
             <UserRoute location={location} path="/profile" component={Info} />
             <UserRoute

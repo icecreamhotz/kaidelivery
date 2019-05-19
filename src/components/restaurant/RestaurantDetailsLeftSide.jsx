@@ -283,7 +283,7 @@ class RestaurantDetailsLeftSide extends Component {
                 this.props.setLoadingFalse();
                 this.props.updateOrderName(data);
                 localStorage.orderName = data;
-                this.props.history.push("/observe");
+                this.props.history.push("/tracking");
               }
             );
           })

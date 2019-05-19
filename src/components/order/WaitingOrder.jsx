@@ -194,6 +194,7 @@ class WaitingOrder extends Component {
     }
     let guestUser = { name: 'Guest', lastname: 'Guest', user_id: null, avatar: 'noimg.png' } 
     const checkUser = user === null ? guestUser : user
+    console.log(order_details)
     return (
       <div className="content-start kai-container">
         {activeStep === 6 ? (

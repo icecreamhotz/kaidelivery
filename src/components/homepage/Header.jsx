@@ -58,7 +58,30 @@ const styles = theme => ({
   }
 });
 
-const linkLeftDrawer = ["/", "/tracking"];
+const linkLeftDrawerAuth = [
+  {
+    title: "Restaurants",
+    link: ""
+  },
+  {
+    title: "Tracking",
+    link: "/tracking"
+  },
+  {
+    title: "History",
+    link: "/history"
+  }
+];
+const linkLeftDrawerNAuth = [
+  {
+    title: "Restaurants",
+    link: ""
+  },
+  {
+    title: "Tracking",
+    link: "/tracking"
+  }
+];
 
 class Header extends Component {
   state = {
@@ -127,24 +150,27 @@ class Header extends Component {
     const openEl = Boolean(anchorEl);
     const bgColorAppbar =
       this.props.location.pathname === "/" ? "transparent" : "#88888c";
-
+    const linkLeftDrawer = isAuthenticated
+      ? linkLeftDrawerAuth
+      : linkLeftDrawerNAuth;
     const sideList = (
       <div style={{ width: 250 }}>
         <List>
-          {["Restaurants", "Tracking Order"].map((text, index) => (
+          {linkLeftDrawer.map((text, index) => (
             <Link
-              to={linkLeftDrawer[index]}
+              to={text.link}
               style={{
                 outline: "none",
                 textDecoration: "none",
                 display: "block"
               }}
+              key={index}
             >
-              <ListItem button key={text}>
+              <ListItem button key={text.title}>
                 <ListItemIcon>
                   {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                 </ListItemIcon>
-                <ListItemText primary={text} />
+                <ListItemText primary={text.title} />
               </ListItem>
             </Link>
           ))}
@@ -186,7 +212,9 @@ class Header extends Component {
               color="inherit"
               className={classes.grow}
             >
-              <FormattedMessage id="header.home" />
+              <Link to="/" style={{ textDecoration: "none", color: "unset" }}>
+                <FormattedMessage id="header.home" />
+              </Link>
             </Typography>
             {isAuthenticated ? (
               <div>
