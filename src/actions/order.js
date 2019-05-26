@@ -1,8 +1,8 @@
-import { UPDATE_ORDER_NAME } from "../types";
+import { UPDATE_ORDER_TEL } from "../types";
 
-export const updateOrderName = orderName => dispatch => {
+export const updateOrderTel = orderTel => dispatch => {
   dispatch({
-    type: UPDATE_ORDER_NAME,
-    orderName
+    type: UPDATE_ORDER_TEL,
+    orderTel
   });
 };

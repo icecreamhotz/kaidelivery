@@ -26,11 +26,10 @@ class DetailsDialogComponent extends Component {
   render() {
     const { details } = this.state;
     const { handleClose } = this.props;
-    console.log(details);
     const orderStatus =
       details.order_status === "4"
         ? "Success"
-        : `Cancel (${details.order_statusdetails})`;
+        : `Cancel ${(details.order_statusdetails === null ? "" : details.order_statusdetails)}`;
     const orderTime = moment(details.created_at).format("YYYY-MM-DD");
     const endpointDetail =
       details.endpoint_details === null ? "No data" : details.endpoint_details;
@@ -125,9 +124,9 @@ class DetailsDialogComponent extends Component {
                 <Typography variant="subtitle1">Employee</Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="caption">{`${details.employee.emp_name} ${
+                <Typography variant="caption">{(details.employee === null ? "" : `${details.employee.emp_name} ${
                   details.employee.emp_lastname
-                }`}</Typography>
+                }`)}</Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Received Time</Typography>
@@ -161,11 +160,11 @@ class DetailsDialogComponent extends Component {
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="subtitle2">Total</Typography>
+                  <Typography variant="subtitle2">Total{(details.order_price === null ? "" : `(custom)`)}</Typography>
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="subtitle2" align="right">
-                    {total.toFixed(2)}
+                    {(details.order_price === null ? "" : `(${details.order_price}) `)}{total.toFixed(2)}
                   </Typography>
                 </Grid>
               </Grid>

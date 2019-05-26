@@ -204,7 +204,7 @@ class InfoRestaurant extends Component {
     render() {
         const { classes } = this.props
         const { restaurant, resType, loading, res_tel, contact_tel, holiday } = this.state
-        const getImage = `http://localhost:3000/restaurants/${(restaurant.res_logo ? restaurant.res_logo : 'noimg.png')}`
+        const getImage = `https://kaidelivery-api.herokuapp.com/restaurants/${(restaurant.res_logo ? restaurant.res_logo : 'noimg.png')}`
         if(loading) return <MyLoader />
         return (
             <div>

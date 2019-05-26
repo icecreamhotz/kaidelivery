@@ -5,9 +5,13 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import SearchIcon from '@material-ui/icons/Search';
 import InputBase from '@material-ui/core/InputBase';
+import { withRouter } from "react-router-dom";
+import { connect } from "react-redux";
+import { updateOrderTel } from "../../actions/order.js";
 
 import { FormattedMessage } from 'react-intl'
 import RestaurantComponent from '../restaurant/RestaurantComponent'
+import Footer from './Footer'
 
 const styles = theme => ({
     hero: {
@@ -72,6 +76,20 @@ const styles = theme => ({
 
 class Welcome extends Component {
 
+    state = { order_tel: '' }
+
+    handleChange = (e) => {
+        this.setState({
+            order_tel: e.target.value
+        })
+    }
+
+    onSearchOrder = () => {
+        const { order_tel } = this.state
+        this.props.updateOrderTel(order_tel)
+        this.props.history.push('/tracking')
+    }
+
     render() {
         const { classes } = this.props
         return(
@@ -93,15 +111,22 @@ class Welcome extends Component {
                                 <SearchIcon />
                             </div>
                                 <InputBase
-                                placeholder="Search restaurants near me ....."
+                                placeholder="Search my orders ....."
+                                onChange={this.handleChange}
                                 classes={{
                                     input: classes.inputInput,
+                                }}
+                                onKeyPress={event => {
+                                    if(event.key === 'Enter') {
+                                        this.onSearchOrder()
+                                    }
                                 }}
                             />
                         </div>
                     </Grid>
                 </Grid>
                 <RestaurantComponent />
+                {/* <Footer /> */}
             </div>
         )
     }
@@ -111,4 +136,6 @@ Welcome.propTypes = {
     classes: PropTypes.object.isRequired,
 }
 
-export default withStyles(styles)(Welcome)
+export default withRouter(connect(null , {
+    updateOrderTel: updateOrderTel
+})(withStyles(styles)(Welcome)))

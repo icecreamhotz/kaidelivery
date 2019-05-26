@@ -1,15 +1,15 @@
-import { UPDATE_ORDER_NAME } from "../types";
+import { UPDATE_ORDER_TEL } from "../types";
 
 export default function update(
   state = {
-    orderName: null
+    orderTel: null
   },
   action = {}
 ) {
   switch (action.type) {
-    case UPDATE_ORDER_NAME:
+    case UPDATE_ORDER_TEL:
       return {
-        orderName: action.orderName
+        orderTel: action.orderTel
       };
     default:
       return state;

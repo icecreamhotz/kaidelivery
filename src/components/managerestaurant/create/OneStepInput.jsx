@@ -15,6 +15,7 @@ import { connect } from 'react-redux'
 import { updateRestaurantName } from '../../../actions/restaurant'
 import Loading from '../../loaders/loading'
 import green from '@material-ui/core/colors/green';
+import { FormattedMessage } from "react-intl";
 
 const styles = theme => ({
   root: {
@@ -123,14 +124,14 @@ class OneStepInput extends Component {
                     <Grid item xs={12}>
                         <Paper className={classes.paper}>
                             <Typography variant="h4" gutterBottom align="left">
-                                Let's create a restaurant.
+                                <FormattedMessage id="create.stepone.createheader" />
                             </Typography>
                             <Divider />
                             <Grid item xs={12} sm={12} style={{marginTop: 30}}>       
                                 <div className="circle">
                                     <img className="profile-pic" src={this.state.preview} alt={this.state.altimg}/>
                                     <Typography variant="caption" gutterBottom style={{color: green[300], display: 'inline', position: 'absolute', bottom: 0,marginLeft: 20}}>
-                                        *Optional
+                                        <FormattedMessage id="create.stepone.optional" />
                                     </Typography>            
                                     <div className="p-image">
                                     <i className="fa fa-camera upload-button icon-image" onClick={() => this.imageInput.click()} style={{cursor:'pointer'}}><span className="icon-text">Choose Image</span></i>
@@ -145,7 +146,7 @@ class OneStepInput extends Component {
                                 <Grid item xs={11} md={3}>
                                     <TextValidator 
                                         name="res_name" 
-                                        label="Restaurant Name" 
+                                        label={<FormattedMessage id="create.stepone.restaurant" />}
                                         value={this.state.res_name} 
                                         onChange={this.onChangeValue('res_name')} 
                                         validators={['required']}

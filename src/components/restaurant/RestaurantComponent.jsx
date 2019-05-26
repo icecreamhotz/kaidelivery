@@ -3,6 +3,8 @@ import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
+import { updateMenu } from "../../actions/menu.js";
+import { connect } from "react-redux";
 
 import API from "../../helper/api";
 import Loading from "../loaders/loading";
@@ -27,6 +29,7 @@ class RestaurantComponent extends Component {
 
   async componentDidMount() {
     await this.loadRestaurantAndTypes();
+    this.props.updateMenu([])
   }
 
   loadRestaurantAndTypes = async () => {
@@ -76,7 +79,7 @@ class RestaurantComponent extends Component {
               >
                 <div className="image-wrapper">
                   <img
-                    src={`http://localhost:3000/restaurants/${res.res_logo}`}
+                    src={`https://kaidelivery-api.herokuapp.com/restaurants/${res.res_logo}`}
                     alt=""
                   />
                 </div>
@@ -116,4 +119,4 @@ class RestaurantComponent extends Component {
   }
 }
 
-export default withStyles(styles)(RestaurantComponent);
+export default connect(null, {updateMenu: updateMenu})(withStyles(styles)(RestaurantComponent));

@@ -121,7 +121,7 @@ class RestaurantDetailsLeftSide extends Component {
         <Grid container>
           <Grid item xs={12}>
             <img
-              src={`http://localhost:3000/restaurants/res_20190320114959.jpg`}
+              src={`https://kaidelivery-api.herokuapp.com/restaurants/res_20190320114959.jpg`}
               alt=""
               style={{
                 height: 260,

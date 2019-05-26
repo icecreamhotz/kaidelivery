@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import "./chat.scss";
 import firebase from "../../helper/firebase.js";
 import "moment/locale/th";
-import { connect } from "react-redux";
 
 import moment from "moment";
 
@@ -90,7 +89,7 @@ class ChatComponent extends Component {
                   <div className="chat__conversation-board__message__person">
                     <div className="chat__conversation-board__message__person__avatar">
                       <img
-                        src={`http://localhost:3000/users/${user.avatar}`}
+                        src={`https://kaidelivery-api.herokuapp.com/users/${user.avatar}`}
                         alt="Monika Figi"
                       />
                     </div>
@@ -113,7 +112,7 @@ class ChatComponent extends Component {
                   <div className="chat__conversation-board__message__person">
                     <div className="chat__conversation-board__message__person__avatar">
                       <img
-                        src={`http://localhost:3000/employees/${
+                        src={`https://kaidelivery-api.herokuapp.com/employees/${
                           employee.emp_avatar
                         }`}
                         alt="Monika Figi"
@@ -171,13 +170,5 @@ class ChatComponent extends Component {
   }
 }
 
-function mapStateToProps(state) {
-  return {
-    orderName: state.order.orderName
-  };
-}
 
-export default connect(
-  mapStateToProps,
-  null
-)(ChatComponent);
+export default ChatComponent

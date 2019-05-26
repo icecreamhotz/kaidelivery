@@ -24,7 +24,6 @@ import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { updateMenu, updateMinPrice } from "../../actions/menu.js";
 import { triggerLoginSignupHeader } from "../../actions/header.js";
-import { updateOrderName } from "../../actions/order.js";
 import geolib from "geolib";
 import API from "../../helper/api.js";
 import MySnackbarContent from "./SnackBar";
@@ -60,7 +59,8 @@ class RestaurantDetailsLeftSide extends Component {
       sendedotp: false,
       success: false,
       failed: false,
-      roleopen: false
+      roleopen: false,
+      duplicatefail: false
     };
   }
 
@@ -266,7 +266,6 @@ class RestaurantDetailsLeftSide extends Component {
       .then(order => {
         const data = order.data.order_name;
         let ref = firebase.database().ref("Orders");
-
         ref
           .child(data)
           .set({
@@ -281,7 +280,6 @@ class RestaurantDetailsLeftSide extends Component {
               },
               () => {
                 this.props.setLoadingFalse();
-                this.props.updateOrderName(data);
                 localStorage.orderName = data;
                 this.props.history.push("/tracking");
               }
@@ -332,32 +330,54 @@ class RestaurantDetailsLeftSide extends Component {
     this.setState({ roleopen: false });
   };
 
-  sendRequestOTP = () => {
+  sendRequestOTP = async () => {
     const { telephone } = this.state;
     // this.props.setLoadingTrue();
 
-    this.setState({
-      success: true,
-      sendedotp: true
-    });
-    // API.post("orders/otp", { telephone: telephone })
-    //   .then(() => {
-    //     this.setState(
-    //       {
-    //         success: true,
-    //         sendedotp: true
-    //       },
-    //       () => this.props.setLoadingFalse()
-    //     );
-    //   })
-    //   .catch(() => {
-    //     this.setState(
-    //       {
-    //         failed: true
-    //       },
-    //       () => this.props.setLoadingFalse()
-    //     );
-    //   });
+    if (this.props.isAuthenticated) {
+   
+      const orders = await API.get("/orders/delivery/user/now");
+      const { data } = await orders;
+      const orderNow = data.data;
+
+      if (orderNow[0].order_name !== null) {
+        this.setState({
+          duplicatefail: true
+        });
+        return;
+      }
+    } else {
+      const orders = await API.post("/orders/delivery/user/now", {
+        telephone: telephone
+      });
+      const { data } = await orders;
+      const orderNow = data.data;
+      if (orderNow.order_name !== null) {
+        this.setState({
+          duplicatefail: true
+        });
+        return;
+      }
+    }
+
+    API.post("orders/otp", { telephone: telephone })
+      .then(() => {
+        this.setState(
+          {
+            success: true,
+            sendedotp: true
+          },
+          () => this.props.setLoadingFalse()
+        );
+      })
+      .catch(() => {
+        this.setState(
+          {
+            failed: true
+          },
+          () => this.props.setLoadingFalse()
+        );
+      });
   };
 
   sendOTP = () => {
@@ -774,6 +794,20 @@ class RestaurantDetailsLeftSide extends Component {
         >
           <MySnackbarContent variant="error" message="Something has wrong:(" />
         </Snackbar>
+        <Snackbar
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left"
+          }}
+          open={this.state.duplicatefail}
+          autoHideDuration={6000}
+          onClose={this.handleCloseError}
+        >
+          <MySnackbarContent
+            variant="error"
+            message="Now you are has one order."
+          />
+        </Snackbar>
       </div>
     );
   }
@@ -797,8 +831,7 @@ export default withRouter(
     {
       updateMenu: updateMenu,
       updateMinPrice: updateMinPrice,
-      triggerLoginSignupHeader: triggerLoginSignupHeader,
-      updateOrderName: updateOrderName
+      triggerLoginSignupHeader: triggerLoginSignupHeader
     }
   )(RestaurantDetailsLeftSide)
 );

@@ -5,6 +5,7 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import API from "../../helper/api.js";
 import "moment/locale/th";
+import Loading from '../loaders/loading'
 import moment from "moment";
 
 import DetailsDialogComponent from "./DetailsDialogComponent";
@@ -18,7 +19,8 @@ class HistoryComponent extends Component {
     this.state = {
       history: [],
       open: false,
-      details: null
+      details: null,
+      loading: true
     };
   }
 
@@ -34,7 +36,8 @@ class HistoryComponent extends Component {
 
     this.setState({
       history: historyData,
-      details: historyData[0]
+      details: historyData[0],
+      loading: false
     });
   };
 
@@ -52,7 +55,8 @@ class HistoryComponent extends Component {
   };
 
   render() {
-    const { history, open, details } = this.state;
+    const { history, open, details, loading } = this.state;
+    if(loading) return <Loading loaded={loading} />
     return (
       <div className="content-start kai-container">
         {open && details !== null && (
@@ -76,9 +80,9 @@ class HistoryComponent extends Component {
           {history.map(item => {
             const orderDate = moment(item.created_at).format("YYYY-MM-DD");
             const orderStatus =
-              item.order_status === "4"
-                ? "Success"
-                : `Cancel (${item.order_statusdetails})`;
+      item.order_status === "4"
+        ? "Success"
+        : `Cancel ${(item.order_statusdetails === null ? "" : item.order_statusdetails)}`;
             const subTotal =
               item.order_price !== null
                 ? parseFloat(item.order_price)
@@ -108,7 +112,7 @@ class HistoryComponent extends Component {
                     <Grid item xs={12}>
                       <Typography
                         variant="subtitle1"
-                        style={{ fontSize: 15, color: "#6bef4a" }}
+                        style={{ fontSize: 15, color: (item.order_status === "4" ? "Green" : "Red") }}
                       >
                         {orderStatus}
                       </Typography>

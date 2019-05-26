@@ -23,12 +23,14 @@ import {
 import API from "../../helper/api";
 import Loading from "../loaders/loading";
 import SweetAlert from "sweetalert-react";
+import { FormattedMessage, injectIntl, intlShape } from "react-intl";
 
 import InfoRestaurant from "./retreive/InfoRestaurant";
 import EditRestaurant from "./edit/EditRestaurant";
 import CreateFoodComponent from "./../managefoods/create/CreateFoodComponent";
 import InfoFoods from "../managefoods/retreive/InfoFoods";
 import CustomersTotalReport from "./report/CustomersTotalReport";
+
 
 const styles = theme => ({
   paper: {
@@ -96,11 +98,11 @@ class IndexRestaurant extends Component {
     const status = data.data.res_status;
     let resStatus;
     if (status === "0") {
-      resStatus = "Waiting for approval";
+      resStatus = this.props.intl.formatMessage({id: 'information.approval'});
     } else if (status === "1") {
-      resStatus = "Approved";
+      resStatus = this.props.intl.formatMessage({id: 'information.approved'});
     } else if (status === "2") {
-      resStatus = "Closed";
+      resStatus = this.props.intl.formatMessage({id: 'information.closed'});
     }
     this.setState({
       res_id: data.data.res_id,
@@ -113,15 +115,10 @@ class IndexRestaurant extends Component {
   changeValueComponent = value => {
     this.setState({ component: value });
   };
-
-  componentWillUpdate(nextProps, nextState) {
-    if (this.state.component !== nextState.component) {
-      this.fetchRestaurantID();
-    }
-  }
-
+  
   componentWillReceiveProps(newProps) {
     if (newProps.resComponent !== this.state.myrestaurantClick) {
+       this.fetchRestaurantID();
       this.setState(
         { component: 0, myrestaurantClick: newProps.resComponent },
         () => {
@@ -190,7 +187,7 @@ class IndexRestaurant extends Component {
           {`${decodeURI(this.props.match.params.resname)} (${res_status})`}
         </Typography>
         <Typography variant="subtitle1" gutterBottom>
-          {`Split ratio: ${res_rate}%`}
+          <FormattedMessage id="information.ratio" />{`: ${res_rate}%`}
         </Typography>
         {component === 0 && (
           <Grid container className={classes.root}>
@@ -204,7 +201,7 @@ class IndexRestaurant extends Component {
               <Grid container direction="column">
                 <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom>
-                    Menu
+                    <FormattedMessage id="information.menu" />
                   </Typography>
                 </Grid>
                 <Divider style={{ width: "100%" }} />
@@ -235,7 +232,7 @@ class IndexRestaurant extends Component {
                           alignItems="center"
                           justify="center"
                         >
-                          Infomations
+                          <FormattedMessage id="information.informations" />
                         </Grid>
                       </Grid>
                     </Paper>
@@ -266,7 +263,7 @@ class IndexRestaurant extends Component {
                           alignItems="center"
                           justify="center"
                         >
-                          Edit Informations
+                          <FormattedMessage id="information.edit" />
                         </Grid>
                       </Grid>
                     </Paper>
@@ -297,7 +294,7 @@ class IndexRestaurant extends Component {
                           alignItems="center"
                           justify="center"
                         >
-                          Permanent Delete
+                          <FormattedMessage id="information.delete" />
                         </Grid>
                       </Grid>
                     </Paper>
@@ -315,7 +312,7 @@ class IndexRestaurant extends Component {
               <Grid container direction="column">
                 <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom>
-                    Foods
+                    <FormattedMessage id="information.food" />
                   </Typography>
                 </Grid>
                 <Divider style={{ width: "100%" }} />
@@ -346,7 +343,7 @@ class IndexRestaurant extends Component {
                           alignItems="center"
                           justify="center"
                         >
-                          Add foods
+                          <FormattedMessage id="information.addfood" />
                         </Grid>
                       </Grid>
                     </Paper>
@@ -377,7 +374,7 @@ class IndexRestaurant extends Component {
                           alignItems="center"
                           justify="center"
                         >
-                          Infomations
+                          <FormattedMessage id="information.foodinformations" />
                         </Grid>
                       </Grid>
                     </Paper>
@@ -395,7 +392,7 @@ class IndexRestaurant extends Component {
               <Grid container direction="column">
                 <Grid item xs={12}>
                   <Typography variant="h3" gutterBottom>
-                    Reports
+                    <FormattedMessage id="information.report" />
                   </Typography>
                 </Grid>
                 <Divider style={{ width: "100%" }} />
@@ -433,7 +430,7 @@ class IndexRestaurant extends Component {
                           alignItems="center"
                           justify="center"
                         >
-                          Customers
+                          <FormattedMessage id="information.customers" />
                         </Grid>
                       </Grid>
                     </Paper>
@@ -495,15 +492,17 @@ function mapStateToProps(state) {
 
 IndexRestaurant.propTypes = {
   classes: PropTypes.object.isRequired,
-  updateRestaurantName: PropTypes.func.isRequired
+  updateRestaurantName: PropTypes.func.isRequired,
+   intl: intlShape.isRequired
 };
 
 export default withRouter(
+  injectIntl(
   connect(
     mapStateToProps,
     {
       updateTriggerComponent: updateTriggerComponent,
       updateRestaurantName: updateRestaurantName
     }
-  )(withStyles(styles, { withTheme: true })(IndexRestaurant))
+  )(withStyles(styles, { withTheme: true })(IndexRestaurant)))
 );

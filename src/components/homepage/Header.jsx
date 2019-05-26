@@ -241,7 +241,7 @@ class Header extends Component {
                 >
                   <Avatar
                     alt={this.state.user.name}
-                    src={`http://localhost:3000/users/${
+                    src={`https://kaidelivery-api.herokuapp.com/users/${
                       avatar ? avatar : "noimg.png"
                     }`}
                     className={classes.bigAvatar}

@@ -28,6 +28,7 @@ import green from "@material-ui/core/colors/green";
 import SweetAlert from "sweetalert-react";
 import { withGoogleMap, GoogleMap, Marker } from "react-google-maps";
 import scriptLoader from "react-async-script-loader";
+import { FormattedMessage } from "react-intl";
 
 // set locale th
 moment.locale("th");
@@ -709,14 +710,14 @@ class TwoStepInput extends Component {
             >
               <Grid item container>
                 <Typography variant="h4" gutterBottom align="left">
-                  Setting your restaurant informations
+                  <FormattedMessage id="create.steptwo.setting" />
                 </Typography>
                 <Divider style={{ width: "100%" }} />
               </Grid>
               <Grid item xs={12} container>
                 <Grid item container>
                   <Typography variant="h6" gutterBottom align="left">
-                    {this.state.res_name} details
+                    {this.state.res_name} <FormattedMessage id="create.steptwo.detail" />
                   </Typography>
                 </Grid>
                 <Grid item container alignItems="flex-end" spacing={24}>
@@ -726,7 +727,7 @@ class TwoStepInput extends Component {
                   <Grid item xs={6}>
                     <TextValidator
                       name="res_email"
-                      label="Email"
+                      label={<FormattedMessage id="input.email" />}
                       value={this.state.res_email}
                       onChange={this.onChangeValue("res_email")}
                       validators={["required", "isEmail"]}
@@ -754,7 +755,7 @@ class TwoStepInput extends Component {
                   <Grid item xs align="left">
                     <Grid item>
                       <Typography variant="subtitle1" gutterBottom>
-                        Restaurant Number
+                        <FormattedMessage id="create.steptwo.restaurantnumber" />
                         <Typography
                           variant="caption"
                           gutterBottom
@@ -764,7 +765,7 @@ class TwoStepInput extends Component {
                             marginLeft: 20
                           }}
                         >
-                          *Required
+                          <FormattedMessage id="create.steptwo.required" />
                         </Typography>
                       </Typography>
                     </Grid>
@@ -882,7 +883,7 @@ class TwoStepInput extends Component {
                   <Grid item xs align="left">
                     <Grid item>
                       <Typography variant="subtitle1" gutterBottom>
-                        Contact Number
+                        <FormattedMessage id="create.steptwo.contactnumber" />
                         <Typography
                           variant="caption"
                           gutterBottom
@@ -892,7 +893,7 @@ class TwoStepInput extends Component {
                             marginLeft: 20
                           }}
                         >
-                          *Optional
+                          <FormattedMessage id="create.steptwo.optional" />
                         </Typography>
                       </Typography>
                     </Grid>
@@ -1010,7 +1011,7 @@ class TwoStepInput extends Component {
                   <Grid item xs>
                     <TextValidator
                       name="res_details"
-                      label="Details"
+                      label={<FormattedMessage id="create.steptwo.detailinput" />}
                       value={this.state.res_details}
                       onChange={this.onChangeValue("res_details")}
                       validators={["required"]}
@@ -1028,7 +1029,7 @@ class TwoStepInput extends Component {
                   <Grid item xs>
                     <TextValidator
                       name="res_address"
-                      label="Address"
+                      label={<FormattedMessage id="create.steptwo.address" />}
                       value={this.state.res_address}
                       multiline
                       rows="3"
@@ -1043,7 +1044,7 @@ class TwoStepInput extends Component {
               <Grid item xs={12} container>
                 <Grid item container>
                   <Typography variant="h6" gutterBottom align="left">
-                    Types of restaurant
+                    <FormattedMessage id="create.steptwo.find" />
                   </Typography>
                 </Grid>
                 <Grid item container alignItems="flex-end" spacing={24}>
@@ -1063,7 +1064,7 @@ class TwoStepInput extends Component {
               <Grid item xs={12} container>
                 <Grid item container>
                   <Typography variant="h6" gutterBottom align="left">
-                    Choose the opening time
+                    <FormattedMessage id="create.steptwo.types" />
                   </Typography>
                 </Grid>
                 <Grid item container alignItems="flex-end" spacing={24}>
@@ -1090,7 +1091,7 @@ class TwoStepInput extends Component {
                     </Grid>
                     <Grid item xs={1} md={1} align="left">
                       <Typography variant="h6" gutterBottom align="left">
-                        to
+                        <FormattedMessage id="create.steptwo.opening" />
                       </Typography>
                     </Grid>
                     <Grid item xs={3} md={3} align="left">
@@ -1112,7 +1113,7 @@ class TwoStepInput extends Component {
               <Grid item xs={12} container>
                 <Grid item container>
                   <Typography variant="h6" gutterBottom align="left">
-                    Choose the holiday
+                    <FormattedMessage id="create.steptwo.to" />
                   </Typography>
                 </Grid>
                 <Grid item container alignItems="flex-end" spacing={24}>
@@ -1128,43 +1129,43 @@ class TwoStepInput extends Component {
                           style={{}}
                         />
                       }
-                      label="จันทร์"
+                      label={<FormattedMessage id="create.steptwo.monday" />}
                     />
                     <FormControlLabel
                       control={
                         <Checkbox onChange={this.handleHoliday} value="อ" />
                       }
-                      label="อังคาร"
+                     label={<FormattedMessage id="create.steptwo.tuesday" />}
                     />
                     <FormControlLabel
                       control={
                         <Checkbox onChange={this.handleHoliday} value="พ" />
                       }
-                      label="พุธ"
+                      label={<FormattedMessage id="create.steptwo.wednesday" />}
                     />
                     <FormControlLabel
                       control={
                         <Checkbox onChange={this.handleHoliday} value="พฤ" />
                       }
-                      label="พฤหัสบดี"
+                      label={<FormattedMessage id="create.steptwo.thursday" />}
                     />
                     <FormControlLabel
                       control={
                         <Checkbox onChange={this.handleHoliday} value="ศ" />
                       }
-                      label="ศุกร์"
+                      label={<FormattedMessage id="create.steptwo.friday" />}
                     />
                     <FormControlLabel
                       control={
                         <Checkbox onChange={this.handleHoliday} value="ส" />
                       }
-                      label="เสาร์"
+                      label={<FormattedMessage id="create.steptwo.saturday" />}
                     />
                     <FormControlLabel
                       control={
                         <Checkbox onChange={this.handleHoliday} value="อา" />
                       }
-                      label="อาทิตย์"
+                      label={<FormattedMessage id="create.steptwo.sunday" />}
                     />
                   </Grid>
                 </Grid>
@@ -1172,7 +1173,7 @@ class TwoStepInput extends Component {
               <Grid item xs={12} container>
                 <Grid item container>
                   <Typography variant="h6" gutterBottom align="left">
-                    Find your restaurant and mark it
+                    <FormattedMessage id="create.steptwo.find" />
                   </Typography>
                 </Grid>
                 <Grid item container alignItems="flex-end" spacing={24}>

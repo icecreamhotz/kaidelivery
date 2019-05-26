@@ -784,7 +784,7 @@ class InfoFoods extends React.Component {
                                                     let preview = n.preview[imgidx]
                                                     if(n.preview[imgidx] === null && n.food_img !== null) {
                                                         if(n.food_img[imgidx] !== '') {
-                                                            preview = `http://localhost:3000/foods/${n.food_img[imgidx]}`
+                                                            preview = `https://kaidelivery-api.herokuapp.com/foods/${n.food_img[imgidx]}`
                                                         }
                                                     }
                                                     console.log(n.food_img)
@@ -811,7 +811,7 @@ class InfoFoods extends React.Component {
                                         :
                                         n.food_img !== null ?
                                             n.food_img.map((img, imgidx) => {
-                                                return (<Avatar key={imgidx} alt={img} src={`http://localhost:3000/foods/${(img ? img : 'noimg.png')}`} className={classes.avatar} />)
+                                                return (<Avatar key={imgidx} alt={img} src={`https://kaidelivery-api.herokuapp.com/foods/${(img ? img : 'noimg.png')}`} className={classes.avatar} />)
                                             })
                                         :
                                         ''

@@ -16,7 +16,8 @@ class RateEmployee extends Component {
       temp_rating: null,
       user: props.user,
       employee: props.employee,
-      comment: ""
+      comment: "",
+      order_id: props.order_id
     };
   }
 
@@ -47,9 +48,10 @@ class RateEmployee extends Component {
   };
 
   submitRatingAndComment = () => {
-    const { rating, comment, employee, user } = this.state;
+    const { rating, comment, employee, user, order_id } = this.state;
 
     API.post(`orders/comment/employee`, {
+      order_id: order_id,
       rating: rating + 1,
       comment: comment,
       user_id: user.user_id,
@@ -99,7 +101,7 @@ class RateEmployee extends Component {
           <Grid item xs={12} align="center">
             <Avatar
               alt="employee"
-              src={`http://localhost:3000/employees/${employee.emp_avatar}`}
+              src={`https://kaidelivery-api.herokuapp.com/employees/${employee.emp_avatar}`}
               style={{ width: 120, height: 120 }}
             />
           </Grid>

@@ -103,8 +103,8 @@ class EmployeeRateAndComment extends Component {
                         <Grid item>
                           <Avatar
                             alt="Remy Sharp"
-                            src={`http://localhost:3000/users/${
-                              item.user.avatar
+                            src={`https://kaidelivery-api.herokuapp.com/users/${
+                              (item.user === null ? "noimg.png" : item.user.avatar)
                             }`}
                           />
                         </Grid>
@@ -116,7 +116,7 @@ class EmployeeRateAndComment extends Component {
                               marginLeft: 15
                             }}
                           >
-                            {`${item.user.name} ${item.user.lastname}`}
+                            {`${(item.user === null ? "Guest Guest" : `${item.user.name} ${item.user.lastname}`)}`}
                           </Typography>
                         </Grid>
                       </Grid>

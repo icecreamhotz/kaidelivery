@@ -9,6 +9,7 @@ import SuccessOrder from "./SuccessOrder";
 import SendOrder from "./SendOrder";
 import FailOrder from "./FailOrder";
 import OrderCollected from "./OrderCollected";
+import OrderArrived from "./OrderArrived";
 import { connect } from "react-redux";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
@@ -24,6 +25,7 @@ import RateEmployee from "./RateEmployee";
 import RateRestaurant from "./RateRestaurant";
 import OrderNotFound from "./OrderNotFound";
 import EmployeeRateAndComment from "./EmployeeRateAndComment";
+import NoData from "./NoData";
 
 moment.locale("th");
 
@@ -33,6 +35,7 @@ function getSteps() {
     "Order Collected",
     "Waiting for food",
     "On The Way",
+    "Order Arrived",
     "Delivered"
   ];
 }
@@ -43,7 +46,7 @@ class WaitingOrder extends Component {
 
     this.state = {
       activeStep: 4,
-      orderName: props.orderName,
+      orderName: "",
       order_id: "",
       order_details: [],
       user: "",
@@ -55,22 +58,73 @@ class WaitingOrder extends Component {
       restaurant: "",
       activeRateStep: 0,
       order_statusdetails: "",
-      loadingFirebase: true
+      loadingFirebase: true,
+      noData: false,
+      resscore_id: null,
+      empscore_id: null
     };
   }
 
   componentDidMount() {
-    this.checkOrderIsCollected();
-    this.checkOrderStatus();
+    this.loadUserOrderNow();
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.orderName !== this.props.orderName) {
-      this.setState({
-        orderName: nextProps.orderName
-      });
+  loadUserOrderNow = async () => {
+    if (this.props.isAuthenticated) {
+      const orders = await API.get("/orders/delivery/user/now");
+      const { data } = await orders;
+      const orderNow = data.data;
+
+      if (orderNow[0].order_name !== null) {
+        this.setState(
+          {
+            orderName: orderNow[0].order_name
+          },
+          () => {
+            this.checkOrderIsCollected();
+            this.checkOrderStatus();
+          }
+        );
+      } else {
+        this.setState({
+          noData: true,
+          loading: false,
+          loadingFirebase: false
+        });
+      }
+    } else {
+      if (this.props.orderTel === null) {
+        this.setState({
+          activeStep: 7,
+          loading: false,
+          loadingFirebase: false
+        });
+      } else {
+        const orders = await API.post("/orders/delivery/user/now", {
+          telephone: this.props.orderTel
+        });
+        const { data } = await orders;
+        const orderNow = data.data;
+        if (orderNow.order_name !== null) {
+          this.setState(
+            {
+              orderName: orderNow.order_name
+            },
+            () => {
+              this.checkOrderIsCollected();
+              this.checkOrderStatus();
+            }
+          );
+        } else {
+          this.setState({
+            noData: true,
+            loading: false,
+            loadingFirebase: false
+          });
+        }
+      }
     }
-  }
+  };
 
   checkOrderIsCollected = () => {
     let order = firebase
@@ -104,7 +158,7 @@ class WaitingOrder extends Component {
               });
             } else {
               this.setState({
-                activeStep: 6,
+                activeStep: 7,
                 loadingFirebase: false
               });
             }
@@ -140,10 +194,11 @@ class WaitingOrder extends Component {
     const foodanddetails = await API.get(`orders/name/${this.state.orderName}`);
     const { data } = await foodanddetails;
     const realData = data.data[0];
+    console.log("foodanddetails");
     console.log(realData);
     if (typeof realData === "undefined" || realData.order_id === null) {
       this.setState({
-        activeStep: 6,
+        activeStep: 7,
         loading: false,
         loadingFirebase: false
       });
@@ -160,7 +215,9 @@ class WaitingOrder extends Component {
         orderDetails: realData.order_details,
         endpointDetails: realData.endpoint_details,
         restaurant: realData.restaurant,
-        order_statusdetails: realData.order_statusdetails
+        order_statusdetails: realData.order_statusdetails,
+        resscore_id: realData.resscore_id,
+        empscore_id: realData.empscore_id
       });
     }
   };
@@ -175,14 +232,16 @@ class WaitingOrder extends Component {
       endpointDetails,
       orderDetails,
       restaurant,
-      loadingFirebase
+      loadingFirebase,
+      noData
     } = this.state;
     if (loading || loadingFirebase)
       return <Loading loaded={loading || loadingFirebase} />;
+    if (noData) return <NoData />;
     let steps;
     let subtotal;
     let total;
-    if (activeStep !== 6) {
+    if (activeStep !== 7) {
       steps = getSteps();
       subtotal = order_details
         .map(
@@ -192,18 +251,21 @@ class WaitingOrder extends Component {
         .toFixed(2);
       total = (parseFloat(subtotal) + parseFloat(deliveryprice)).toFixed(2);
     }
-    let guestUser = { name: 'Guest', lastname: 'Guest', user_id: null, avatar: 'noimg.png' } 
-    const checkUser = user === null ? guestUser : user
-    console.log(order_details)
+    let guestUser = {
+      name: "Guest",
+      lastname: "Guest",
+      user_id: null,
+      avatar: "noimg.png"
+    };
+    const checkUser = user === null ? guestUser : user;
     return (
       <div className="content-start kai-container">
-        {activeStep === 6 ? (
-          <OrderNotFound orderName={this.state.orderName} />
-        ) : (
-          ""
-        )}
-        {activeStep < 5 && (
-          <Stepper activeStep={activeStep} alternativeLabel>
+        {activeStep === 7 ? <OrderNotFound /> : ""}
+        {(activeStep < 5 || activeStep === 6) && (
+          <Stepper
+            activeStep={activeStep === 6 ? 4 : activeStep}
+            alternativeLabel
+          >
             {steps.map(label => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -221,7 +283,8 @@ class WaitingOrder extends Component {
         ) : (
           ""
         )}
-        {activeStep < 4 && activeStep !== 0 ? (
+        {activeStep === 6 ? <OrderArrived /> : ""}
+        {(activeStep < 4 || activeStep === 6) && activeStep !== 0 ? (
           <div>
             <Typography variant="h6" gutterBottom>
               Order Details
@@ -229,7 +292,6 @@ class WaitingOrder extends Component {
             <Typography variant="body1" gutterBottom>
               Foods
             </Typography>
-
             <Grid container>
               {order_details.map(od => {
                 const totalPrice = parseFloat(
@@ -349,25 +411,31 @@ class WaitingOrder extends Component {
         )}
         {activeStep === 4 ? (
           <div>
-            {this.state.activeRateStep === 0 ? (
+            {this.state.empscore_id === null &&
+            this.state.activeRateStep === 0 ? (
               <RateEmployee
                 employee={employee}
                 setRatingStep={this.setRatingStep}
                 user={checkUser}
+                order_id={this.state.order_id}
               />
             ) : (
               ""
             )}
-            {this.state.activeRateStep === 1 ? (
+            {this.state.resscore_id === null &&
+            this.state.activeRateStep === 1 ? (
               <RateRestaurant
                 user={checkUser}
                 restaurant={restaurant}
                 setRatingStep={this.setRatingStep}
+                order_id={this.state.order_id}
               />
             ) : (
               ""
             )}
-            {this.state.activeRateStep === 2 ? (
+            {(this.state.empscore_id !== null &&
+              this.state.resscore_id !== null) ||
+            this.state.activeRateStep === 2 ? (
               <Typography
                 variant="body2"
                 style={{
@@ -390,7 +458,8 @@ class WaitingOrder extends Component {
 
 function mapStateToProps(state) {
   return {
-    orderName: state.order.orderName
+    orderTel: state.order.orderTel,
+    isAuthenticated: state.user.token
   };
 }
 

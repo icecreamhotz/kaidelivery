@@ -228,7 +228,7 @@ class Info extends Component {
         const { classes } = this.props;
         const { loadingContent, avatar, preview, loadingDB } = this.state
         if(loadingContent) { return <LoaderInfo /> }
-        const getImage = `http://localhost:3000/users/${(avatar ? avatar : 'noimg.png')}`
+        const getImage = `https://kaidelivery-api.herokuapp.com/users/${(avatar ? avatar : 'noimg.png')}`
         return(
             <div className="content-start">
                 <Loading loaded={loadingDB}/>

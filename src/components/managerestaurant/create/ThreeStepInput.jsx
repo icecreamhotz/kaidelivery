@@ -8,6 +8,7 @@ import Fab from '@material-ui/core/Fab';
 import ArrowForward from '@material-ui/icons/ArrowForward';
 import { Color } from '../../../variable/Color'
 import { NavLink } from 'react-router-dom'
+import { FormattedMessage } from "react-intl";
 
 import './success.scss'
 
@@ -70,19 +71,19 @@ class ThreeStepInput extends Component {
                             <div className={`${classes.section} ${classes.sectionTextSuccess}`}>
                                 <Grid item xs>
                                     <Typography variant="h4" gutterBottom>
-                                        Great !
+                                        <FormattedMessage id="create.stepthree.saturday" />
                                     </Typography>
                                 </Grid>
                                 <Grid item xs>
                                     <Typography variant="subtitle1" gutterBottom>
-                                        Your restaurants has been added to the system and waiting for confirmation.
+                                        <FormattedMessage id="create.stepthree.sunday" />
                                     </Typography>
                                 </Grid>
                                 <Grid item xs>
                                     <NavLink to={`/myrestaurant/${this.props.resName}`} style={{textDecoration: 'none'}}>
                                         <Fab variant="extended" color="primary" aria-label="Add" className={`${classes.margin} ${classes.button}`}>
                                         <ArrowForward className={classes.extendedIcon} />
-                                            Add more food
+                                            <FormattedMessage id="create.stepthree.more" />
                                         </Fab>
                                     </NavLink>
                                 </Grid>

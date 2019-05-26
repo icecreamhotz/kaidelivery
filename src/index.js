@@ -19,7 +19,6 @@ import { addLocaleData } from "react-intl";
 import en from "react-intl/locale-data/en";
 import th from "react-intl/locale-data/th";
 import { localeSet } from "./actions/locale";
-import { updateOrderName } from "./actions/order";
 
 addLocaleData(en);
 addLocaleData(th);
@@ -28,11 +27,6 @@ const store = createStore(
   rootReducer,
   composeWithDevTools(applyMiddleware(thunk))
 );
-
-if (localStorage.orderName) {
-  const orderName = localStorage.orderName;
-  store.dispatch(updateOrderName(orderName));
-}
 
 if (localStorage.token) {
   const user = { token: localStorage.token };

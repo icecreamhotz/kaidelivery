@@ -106,7 +106,7 @@ class RestaurantRatingAndComment extends Component {
                         <Grid item>
                           <Avatar
                             alt="Remy Sharp"
-                            src={`http://localhost:3000/users/${
+                            src={`https://kaidelivery-api.herokuapp.com/users/${
                               avatar
                             }`}
                           />

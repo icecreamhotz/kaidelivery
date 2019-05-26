@@ -754,7 +754,7 @@ class EditRestaurant extends Component {
     render() {
         const { classes, isScriptLoadSucceed } = this.props;
         const { res_logo, preview, altimg } = this.state
-        const getImage = `http://localhost:3000/restaurants/${(res_logo ? res_logo : 'noimg.png')}`
+        const getImage = `https://kaidelivery-api.herokuapp.com/restaurants/${(res_logo ? res_logo : 'noimg.png')}`
         const showImage = (preview !== '' ? preview : getImage)
         const altImage = (preview !== '' ? altimg : getImage)
         return (

@@ -11,6 +11,7 @@ import TwoStepInput from "./TwoStepInput";
 import ThreeStepInput from './ThreeStepInput';
 import { connect } from 'react-redux'
 import { updateTriggerURL } from '../../../actions/restaurant'
+import { FormattedMessage } from "react-intl";
 
 const styles = theme => ({
   backButton: {
@@ -23,7 +24,7 @@ const styles = theme => ({
 });
 
 function getSteps() {
-  return ['About Restaurant', 'Restaurant Infomations', 'Success'];
+  return [<FormattedMessage id="create.stepone.header" />, <FormattedMessage id="create.steptwo.header" />, <FormattedMessage id="create.stepthree.header" />];
 }
 
 class CreateRestaurant extends Component {
