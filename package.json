@@ -13,7 +13,7 @@
     "history": "^4.7.2",
     "material-ui-pickers": "^2.2.4",
     "moment": "^2.23.0",
-    "node-sass": "^4.10.0",
+    "node-sass": "^7.0.0",
     "react": "^16.6.3",
     "react-async-script-loader": "^0.3.0",
     "react-chartjs-2": "^2.7.6",
